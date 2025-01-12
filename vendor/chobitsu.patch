@@ -1,0 +1,74 @@
+diff --git a/src/domains/Runtime.ts b/src/domains/Runtime.ts
+index b980929..67388f9 100644
+--- a/src/domains/Runtime.ts
++++ b/src/domains/Runtime.ts
+@@ -64,9 +64,9 @@ export function getProperties(
+   return objManager.getProperties(params)
+ }
+ 
+-export function evaluate(
++export async function evaluate(
+   params: Runtime.EvaluateRequest
+-): Runtime.EvaluateResponse {
++): Promise<Runtime.EvaluateResponse> {
+   const ret: any = {}
+ 
+   let result: any
+@@ -74,7 +74,7 @@ export function evaluate(
+     if (params.throwOnSideEffect && hasSideEffect(params.expression)) {
+       throw EvalError('Possible side-effect in debug-evaluate')
+     }
+-    result = evaluateJs(params.expression)
++    result = await evaluateJs(params.expression)
+     setGlobal('$_', result)
+     ret.result = objManager.wrap(result, {
+       generatePreview: true,
+diff --git a/src/index.ts b/src/index.ts
+index 1dd6e97..0ea8300 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -38,7 +38,6 @@ chobitsu.register('Runtime', {
+   discardConsoleEntries: noop,
+   getHeapUsage: noop,
+   getIsolateId: noop,
+-  releaseObject: noop,
+   releaseObjectGroup: noop,
+   runIfWaitingForDebugger: noop,
+ })
+diff --git a/src/lib/evaluate.ts b/src/lib/evaluate.ts
+index 0732a13..f0abcce 100644
+--- a/src/lib/evaluate.ts
++++ b/src/lib/evaluate.ts
+@@ -44,14 +44,14 @@ export function setGlobal(name: string, val: any) {
+   global[name] = val
+ }
+ 
+-export default function evaluate(expression: string) {
++export default async function evaluate(expression: string) {
+   let ret
+ 
+   injectGlobal()
+   try {
+-    ret = eval.call(window, `(${expression})`)
++    ret = await eval.call(window, `(async() => (${expression}))()`)
+   } catch (e) {
+-    ret = eval.call(window, expression)
++    ret = await eval.call(window, `(async () => {${expression}})()`)
+   }
+   clearGlobal()
+ 
+diff --git a/src/lib/objManager.ts b/src/lib/objManager.ts
+index ff6a9e3..d79cdd6 100644
+--- a/src/lib/objManager.ts
++++ b/src/lib/objManager.ts
+@@ -46,6 +46,10 @@ export function wrap(
+   value: any,
+   { generatePreview = false, self = value } = {}
+ ): any {
++  if (typeof value === 'object' && value !== null && typeof value.toJSON === 'function') {
++    value = value.toJSON()
++  }
++
+   const ret = basic(value)
+   const { type, subtype } = ret
+ 
