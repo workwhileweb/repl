@@ -1,0 +1,41 @@
+{
+  "name": "mtcute-repl",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.5.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@corvu/otp-field": "^0.1.4",
+    "@corvu/resizable": "^0.2.3",
+    "@fuman/utils": "0.0.4",
+    "@kobalte/core": "^0.13.7",
+
+    "@nanostores/persistent": "^0.10.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "filesize": "^10.1.6",
+    "lucide-solid": "^0.445.0",
+    "monaco-editor": "0.52.0",
+    "monaco-editor-core": "0.52.0",
+    "monaco-editor-textmate": "^4.0.0",
+    "monaco-textmate": "^3.0.1",
+    "mtcute-repl-worker": "workspace:*",
+    "nanoid": "^5.0.9",
+    "nanostores": "^0.11.3",
+    "onigasm": "^2.2.5",
+    "solid-icons": "^1.1.0",
+    "solid-js": "^1.9.4",
+    "solid-transition-group": "^0.2.3",
+    "ts-blank-space": "^0.4.4"
+  },
+  "devDependencies": {
+    "postcss": "^8.4.49",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  }
+}
