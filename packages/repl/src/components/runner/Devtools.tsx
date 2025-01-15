@@ -10,6 +10,21 @@ const HTML = `
   <script src="https://unpkg.com/@ungap/custom-elements/es.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/chii@1.12.3/public/front_end/entrypoints/chii_app/chii_app.js"></script>
   <body class="undocked" id="-blink-dev-tools">
+  <style id="inject-css">
+    :root {
+      --sys-color-base-container: hsl(0 0% 100%);
+      --sys-color-on-base-divider: hsl(240 5.9% 90%);
+      --sys-color-divider: hsl(240 5.9% 90%);
+      --sys-color-neutral-outline: hsl(240 5.9% 90%);
+    }
+    .-theme-with-dark-background {
+      --sys-color-base-container: hsl(240 10% 3.9%);
+      --sys-color-on-base-divider: hsl(240 3.7% 15.9%);
+      --sys-color-divider: hsl(240 3.7% 15.9%);
+      --sys-color-neutral-outline: hsl(240 3.7% 15.9%);
+      --sys-color-state-hover-on-subtle: hsl(0 0% 98% / 0.08);
+    }
+  </style>
 `
 
 const INJECTED_SCRIPT = `
@@ -38,13 +53,17 @@ async function focusConsole(tabbedPane) {
   consoleTab.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
 }
 
-(async ()=> {
+(async () => {
   const tabbedPane = await waitForElement('.tabbed-pane', document.body);
   await focusConsole(tabbedPane);
   hideBySelector(tabbedPane, '.tabbed-pane-header');
 
   const consoleToolbar = await waitForElement('.console-main-toolbar', document.body);
   hideBySelector(consoleToolbar, 'devtools-issue-counter');
+
+  const injectCss = await waitForElement('#inject-css', document.body);
+  const rootView = await waitForElement('.root-view', document.body);
+  rootView.appendChild(injectCss);
 })();
 `
 

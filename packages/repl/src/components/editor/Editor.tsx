@@ -1,7 +1,7 @@
+import { useColorModeValue } from '@kobalte/core'
 import { editor as mEditor, Uri } from 'monaco-editor'
-import { createEffect, on, onMount } from 'solid-js'
-import { useColorScheme } from '../../lib/use-color-scheme'
 
+import { createEffect, on, onMount } from 'solid-js'
 import { $activeTab, $tabs, type EditorTab } from '../../store/tabs.ts'
 import { useStore } from '../../store/use-store.ts'
 import { setupMonaco } from './utils/setup.ts'
@@ -38,7 +38,7 @@ export default function Editor(props: EditorProps) {
   let ref!: HTMLDivElement
   let editor: mEditor.IStandaloneCodeEditor | undefined
 
-  const scheme = useColorScheme()
+  const monacoTheme = useColorModeValue('latte', 'mocha')
   // const monacoTheme = () => scheme() === 'dark' ? 'ayu-dark' : 'ayu-light'
   const modelsByTab = new Map<string, mEditor.ITextModel>()
 
@@ -68,8 +68,7 @@ export default function Editor(props: EditorProps) {
         enabled: 'on',
       },
       lineNumbersMinChars: 3,
-      // theme: monacoTheme(),
-      theme: 'latte', // todo
+      theme: monacoTheme(),
       scrollBeyondLastLine: false,
     })
 
@@ -89,10 +88,10 @@ export default function Editor(props: EditorProps) {
     return () => editor?.dispose()
   })
 
-  // createEffect(on(() => monacoTheme(), (theme) => {
-  //     if (!editor) return
-  //     editor.updateOptions({ theme })
-  // }))
+  createEffect(on(() => monacoTheme(), (theme) => {
+    if (!editor) return
+    editor.updateOptions({ theme })
+  }))
 
   createEffect(on(activeTab, (tabId) => {
     if (!editor) return
