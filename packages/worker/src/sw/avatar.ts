@@ -6,13 +6,18 @@ import { getCacheStorage } from './cache.ts'
 
 const clients = new Map<string, BaseTelegramClient>()
 
+export async function clearAvatarCache(accountId: string) {
+  const cacheKey = new URL(`/sw/avatar/${accountId}`, location.origin)
+  await (await getCacheStorage()).delete(cacheKey)
+}
+
 export async function handleAvatarRequest(accountId: string) {
   const cacheKey = new URL(`/sw/avatar/${accountId}`, location.origin)
 
   const cache = await getCacheStorage()
   try {
     const cachedRes = await timeout(cache.match(cacheKey), 10000)
-    if (cachedRes && cachedRes.ok) {
+    if (cachedRes) {
       return cachedRes
     }
   } catch {}
@@ -27,7 +32,10 @@ export async function handleAvatarRequest(accountId: string) {
   const self = await getMe(client)
 
   if (!self.photo) {
-    return new Response('No photo', { status: 404 })
+    const res = new Response('No photo', { status: 404 })
+    await client.close()
+    await cache.put(cacheKey, res.clone())
+    return res
   }
 
   const buf = await downloadAsBuffer(client, self.photo.big)

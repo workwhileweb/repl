@@ -1,16 +1,9 @@
+import { type StringSessionLibName, workerInvoke } from 'mtcute-repl-worker/client'
 import { createEffect, createSignal, on } from 'solid-js'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../lib/components/ui/dialog.tsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../lib/components/ui/select.tsx'
 import { TextField, TextFieldErrorMessage, TextFieldFrame, TextFieldLabel, TextFieldRoot } from '../../../lib/components/ui/text-field.tsx'
-import { $accounts } from '../../../store/accounts.ts'
-
-export type StringSessionLibName =
-  | 'mtcute'
-  | 'pyrogram'
-  | 'telethon'
-  | 'mtkruto'
-  | 'gramjs'
 
 export const StringSessionDefs: {
   name: StringSessionLibName
@@ -22,30 +15,6 @@ export const StringSessionDefs: {
   { name: 'pyrogram', displayName: 'Pyrogram' },
   { name: 'mtkruto', displayName: 'MTKruto' },
 ]
-
-// async function convert(libName: StringSessionLibName, session: string): Promise<StringSessionData> {
-//   switch (libName) {
-//     case 'mtcute': {
-//       return readStringSession(session)
-//     }
-//     case 'telethon': {
-//       const { convertFromTelethonSession } = await import('@mtcute/convert')
-//       return convertFromTelethonSession(session)
-//     }
-//     case 'gramjs': {
-//       const { convertFromGramjsSession } = await import('@mtcute/convert')
-//       return convertFromGramjsSession(session)
-//     }
-//     case 'pyrogram': {
-//       const { convertFromPyrogramSession } = await import('@mtcute/convert')
-//       return convertFromPyrogramSession(session)
-//     }
-//     case 'mtkruto': {
-//       const { convertFromMtkrutoSession } = await import('@mtcute/convert')
-//       return convertFromMtkrutoSession(session)
-//     }
-//   }
-// }
 
 export function StringSessionImportDialog(props: {
   open: boolean
@@ -63,32 +32,12 @@ export function StringSessionImportDialog(props: {
     abortController = new AbortController()
     setLoading(true)
 
-    const oldAccounts = $accounts.get()
-
     try {
-      const converted = await convert(props.chosenLibName, inputRef()!.value)
-
-      // check if account exists
-      if (converted.self && oldAccounts.some(it => it.telegramId === converted.self!.userId)) {
-        setError(`Account already exists (user ID: ${converted.self!.userId})`)
-        setLoading(false)
-        return
-      }
-
-      const account = await importAccount(converted, abortController.signal)
-
-      // check once again if account already exists
-      if (oldAccounts.some(it => it.telegramId === account.telegramId)) {
-        deleteAccount(account.id)
-        setError(`Account already exists (user ID: ${account.telegramId})`)
-        setLoading(false)
-        return
-      }
-
-      $accounts.set([
-        ...$accounts.get(),
-        account,
-      ])
+      await workerInvoke('telegram', 'importStringSession', {
+        libraryName: props.chosenLibName,
+        session: inputRef()!.value,
+        abortSignal: abortController.signal,
+      })
       props.onClose()
     } catch (e) {
       if (e instanceof Error) {
@@ -101,6 +50,7 @@ export function StringSessionImportDialog(props: {
 
     setLoading(false)
   }
+
   createEffect(on(() => props.open, (open) => {
     if (!open) {
       abortController?.abort()

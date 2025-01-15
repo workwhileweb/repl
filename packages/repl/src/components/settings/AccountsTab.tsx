@@ -1,29 +1,39 @@
+import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
+import type { TooltipTriggerProps } from '@kobalte/core/tooltip'
 import type { TelegramAccount } from 'mtcute-repl-worker/client'
 import type { LoginStep } from './login/Login.tsx'
-import { timers } from '@fuman/utils'
+import { timers, unknownToError } from '@fuman/utils'
 import {
   LucideBot,
+  LucideChevronRight,
   LucideEllipsis,
+  LucideFolderUp,
   LucideLogIn,
   LucidePlus,
+  LucideRefreshCw,
   LucideSearch,
   LucideTrash,
   LucideUser,
   LucideX,
 } from 'lucide-solid'
 import { workerInvoke } from 'mtcute-repl-worker/client'
+
 import { nanoid } from 'nanoid'
 import { createEffect, createMemo, createSignal, For, on, onCleanup, Show } from 'solid-js'
+import { toast } from 'solid-sonner'
+import { copyToClipboard } from '../../lib/clipboard.tsx'
 import { Badge } from '../../lib/components/ui/badge.tsx'
-
 import { Button } from '../../lib/components/ui/button.tsx'
 import { Dialog, DialogContent } from '../../lib/components/ui/dialog.tsx'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '../../lib/components/ui/dropdown-menu.tsx'
 import { TextField, TextFieldFrame, TextFieldRoot } from '../../lib/components/ui/text-field.tsx'
+import { WithTooltip } from '../../lib/components/ui/tooltip.tsx'
 import { cn } from '../../lib/utils.ts'
 import { $accounts, $activeAccountId } from '../../store/accounts.ts'
 import { useStore } from '../../store/use-store.ts'
 import { AccountAvatar } from '../AccountAvatar.tsx'
 import { ImportDropdown } from './import/ImportDropdown.tsx'
+import { StringSessionDefs } from './import/StringSessionImportDialog.tsx'
 import { LoginForm } from './login/Login.tsx'
 
 function AddAccountDialog(props: {
@@ -113,6 +123,18 @@ function AccountRow(props: {
   active: boolean
   onSetActive: () => void
 }) {
+  const [deleteConfirming, setDeleteConfirming] = createSignal(false)
+  const [deleting, setDeleting] = createSignal(false)
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      await workerInvoke('telegram', 'deleteAccount', { accountId: props.account.id })
+    } catch (e) {
+      toast(unknownToError(e).message)
+    }
+    setDeleting(false)
+  }
+
   return (
     <div class="flex max-w-full flex-row overflow-hidden rounded-md border border-border p-2">
       <AccountAvatar
@@ -150,29 +172,110 @@ function AccountRow(props: {
       </div>
       <div class="flex-1" />
       <div class="mr-1 flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          class="size-8"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            as={(props: DropdownMenuTriggerProps) => (
+              <Button
+                variant="ghost"
+                size="icon"
+                class="size-8"
+                {...props}
+              >
+                <LucideEllipsis class="size-4" />
+              </Button>
+            )}
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              class="py-1 text-xs"
+              onClick={() => {
+                workerInvoke('telegram', 'updateInfo', { accountId: props.account.id }).then(() => {
+                  toast('Account info updated')
+                }).catch((e) => {
+                  toast(unknownToError(e).message)
+                })
+              }}
+            >
+              <LucideRefreshCw class="mr-2 size-3.5 stroke-[1.5px]" />
+              Update info
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger class="py-1 text-xs">
+                <LucideFolderUp class="mr-2 size-3.5 stroke-[1.5px]" />
+                Export session
+                <LucideChevronRight class="ml-2 size-3.5" />
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <For each={StringSessionDefs}>
+                  {def => (
+                    <DropdownMenuItem
+                      class="py-1 text-xs"
+                      onClick={() => {
+                        workerInvoke('telegram', 'exportStringSession', {
+                          accountId: props.account.id,
+                          libraryName: def.name,
+                        }).then((res) => {
+                          copyToClipboard(res)
+                          toast('String session copied to clipboard')
+                        }).catch((e) => {
+                          toast(unknownToError(e).message)
+                        })
+                      }}
+                    >
+                      {def.displayName}
+                    </DropdownMenuItem>
+                  )}
+                </For>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <WithTooltip content="Use this account">
+          {(triggerProps: TooltipTriggerProps) => (
+            <Button
+              variant="ghost"
+              size="icon"
+              class="size-8"
+              disabled={props.active}
+              {...triggerProps}
+              onClick={() => {
+                props.onSetActive()
+                // @ts-expect-error meow
+                triggerProps.onClick?.()
+              }}
+            >
+              <LucideLogIn class="size-4" />
+            </Button>
+          )}
+        </WithTooltip>
+        <WithTooltip
+          content="Click again to confirm"
+          enabled={deleteConfirming()}
+          rootProps={{ openDelay: 0 }}
         >
-          <LucideEllipsis class="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="size-8"
-          disabled={props.active}
-          onClick={props.onSetActive}
-        >
-          <LucideLogIn class="size-4" />
-        </Button>
-        <Button
-          variant="ghostDestructive"
-          size="icon"
-          class="size-8"
-        >
-          <LucideTrash class="size-4" />
-        </Button>
+          {(props: TooltipTriggerProps) => (
+            <Button
+              variant={deleteConfirming() ? 'destructive' : 'ghostDestructive'}
+              size="icon"
+              class="size-8"
+              {...props}
+              onClick={() => {
+                if (deleteConfirming()) {
+                  handleDelete()
+                  setDeleteConfirming(false)
+                } else {
+                  setDeleteConfirming(true)
+                }
+                // @ts-expect-error meow
+                props.onClick?.()
+              }}
+              onMouseLeave={() => setDeleteConfirming(false)}
+              disabled={deleting()}
+            >
+              <LucideTrash class="size-4" />
+            </Button>
+          )}
+        </WithTooltip>
       </div>
     </div>
   )

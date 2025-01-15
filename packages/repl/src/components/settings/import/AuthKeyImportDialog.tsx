@@ -1,10 +1,9 @@
-import { hex } from '@fuman/utils'
+import { workerInvoke } from 'mtcute-repl-worker/client'
 import { createEffect, createSignal, on } from 'solid-js'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../lib/components/ui/dialog.tsx'
 import { TextField, TextFieldErrorMessage, TextFieldFrame, TextFieldLabel, TextFieldRoot } from '../../../lib/components/ui/text-field.tsx'
-import { $accounts } from '../../../store/accounts.ts'
 
 export function AuthKeyImportDialog(props: {
   open: boolean
@@ -27,36 +26,14 @@ export function AuthKeyImportDialog(props: {
     abortController = new AbortController()
     setLoading(true)
 
-    const oldAccounts = $accounts.get()
-
     try {
-      const testMode_ = testMode()
-      const authKey = hex.decode(authKeyInputRef()!.value)
-      if (authKey.length !== 256) {
-        setError('Invalid auth key (must be 256 bytes long)')
-        setLoading(false)
-        return
-      }
+      await workerInvoke('telegram', 'importAuthKey', {
+        hexAuthKey: authKeyInputRef()!.value,
+        dcId: Number(dcId()),
+        testMode: testMode(),
+        abortSignal: abortController.signal,
+      })
 
-      const session: InputStringSessionData = {
-        authKey: hex.decode(authKeyInputRef()!.value),
-        testMode: testMode_,
-        primaryDcs: (testMode_ ? DC_MAPPING_TEST : DC_MAPPING_PROD)[Number(dcId())],
-      }
-      const account = await importAccount(session, abortController.signal)
-
-      // check if account already exists
-      if (oldAccounts.some(it => it.telegramId === account.telegramId)) {
-        deleteAccount(account.id)
-        setError(`Account already exists (user ID: ${account.telegramId})`)
-        setLoading(false)
-        return
-      }
-
-      $accounts.set([
-        ...$accounts.get(),
-        account,
-      ])
       props.onClose()
     } catch (e) {
       if (e instanceof Error) {

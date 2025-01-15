@@ -3,8 +3,9 @@ import type {
   TooltipContentProps,
   TooltipRootProps,
 } from '@kobalte/core/tooltip'
+import type { ComponentProps, JSX, ValidComponent } from 'solid-js'
 import { Tooltip as TooltipPrimitive } from '@kobalte/core/tooltip'
-import { mergeProps, splitProps, type ValidComponent } from 'solid-js'
+import { mergeProps, Show, splitProps } from 'solid-js'
 import { cn } from '../../utils.ts'
 
 export const TooltipTrigger = TooltipPrimitive.Trigger
@@ -13,6 +14,8 @@ export function Tooltip(props: TooltipRootProps) {
   const merge = mergeProps<TooltipRootProps[]>(
     {
       gutter: 4,
+      openDelay: 200,
+      closeDelay: 200,
       flip: false,
     },
     props,
@@ -39,5 +42,24 @@ export function TooltipContent<T extends ValidComponent = 'div'>(props: Polymorp
         {...rest}
       />
     </TooltipPrimitive.Portal>
+  )
+}
+
+export function WithTooltip(props: {
+  children: (props: ComponentProps<typeof TooltipTrigger>) => JSX.Element
+  content: JSX.Element
+  rootProps?: TooltipRootProps
+  enabled?: boolean
+}) {
+  return (
+    <Show
+      when={props.enabled ?? true}
+      fallback={props.children({})}
+    >
+      <Tooltip {...props.rootProps}>
+        <TooltipTrigger as={props.children} />
+        <TooltipContent>{props.content}</TooltipContent>
+      </Tooltip>
+    </Show>
   )
 }

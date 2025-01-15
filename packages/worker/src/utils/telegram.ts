@@ -48,6 +48,8 @@ export async function importAccount(
     const self = await getMe(client)
     if (abortSignal.aborted) throw abortSignal.reason
 
+    await client.close()
+
     return {
       id: accountId,
       name: self.displayName,

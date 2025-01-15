@@ -12,6 +12,9 @@ export default defineConfig((env): UserConfig => {
   }
 
   return {
+    optimizeDeps: {
+      exclude: ['@mtcute/wasm'],
+    },
     server: {
       port: 3000,
     },

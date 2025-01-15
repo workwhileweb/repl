@@ -1,5 +1,5 @@
 import { type TelegramAccount, workerInvoke } from 'mtcute-repl-worker/client'
-import { createSignal, onCleanup, onMount } from 'solid-js'
+import { createEffect, createSignal, onCleanup, untrack } from 'solid-js'
 import { Avatar, AvatarFallback, AvatarImage, makeAvatarFallbackText } from '../lib/components/ui/avatar.tsx'
 
 export function AccountAvatar(props: {
@@ -7,16 +7,28 @@ export function AccountAvatar(props: {
   account: TelegramAccount
 }) {
   const [url, setUrl] = createSignal<string | undefined>()
-  onMount(async () => {
-    try {
-      const buf = await workerInvoke('telegram', 'fetchAvatar', props.account.id)
-      if (!buf) return
-
-      const url = URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }))
-      setUrl(url)
-    } catch (e) {
-      console.error(e)
+  createEffect(() => {
+    const accountId = props.account.id
+    if (!accountId) {
+      return
     }
+
+    if (untrack(url)) {
+      URL.revokeObjectURL(untrack(url)!)
+    }
+    setUrl(undefined)
+
+    ;(async () => {
+      try {
+        const buf = await workerInvoke('telegram', 'fetchAvatar', accountId)
+        if (!buf) return
+
+        const url = URL.createObjectURL(new Blob([buf], { type: 'image/jpeg' }))
+        setUrl(url)
+      } catch (e) {
+        console.error(e)
+      }
+    })()
   })
   onCleanup(() => url() && URL.revokeObjectURL(url()!))
 

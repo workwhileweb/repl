@@ -12,14 +12,17 @@
   "dependencies": {
     "@corvu/otp-field": "^0.1.4",
     "@corvu/resizable": "^0.2.3",
+    "@fuman/io": "0.0.8",
     "@fuman/utils": "0.0.4",
     "@kobalte/core": "^0.13.7",
-
+    "@mtcute/convert": "^0.19.4",
+    "@mtcute/web": "^0.19.5",
     "@nanostores/persistent": "^0.10.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "filesize": "^10.1.6",
     "lucide-solid": "^0.445.0",
+    "md5": "^2.3.0",
     "monaco-editor": "0.52.0",
     "monaco-editor-core": "0.52.0",
     "monaco-editor-textmate": "^4.0.0",
@@ -30,10 +33,12 @@
     "onigasm": "^2.2.5",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.9.4",
+    "solid-sonner": "^0.2.8",
     "solid-transition-group": "^0.2.3",
     "ts-blank-space": "^0.4.4"
   },
   "devDependencies": {
+    "@types/md5": "^2.3.5",
     "postcss": "^8.4.49",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"

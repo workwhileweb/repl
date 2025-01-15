@@ -4,6 +4,7 @@ import type { ReplWorkerEvents } from './worker/utils.ts'
 import { Deferred, unknownToError } from '@fuman/utils'
 
 export type { TelegramAccount } from './store/accounts.ts'
+export type { StringSessionLibName } from './worker/telegram.ts'
 
 // eslint-disable-next-line ts/no-namespace
 export namespace mtcute {
@@ -56,6 +57,7 @@ export function workerInit(iframe_: HTMLIFrameElement) {
 }
 
 type ForceFunction<T> = T extends (...args: any) => any ? T : never
+type Awaited<T> = T extends Promise<infer U> ? U : T
 
 export async function workerInvoke<
   Domain extends keyof ReplWorker,
@@ -64,7 +66,7 @@ export async function workerInvoke<
   domain: Domain,
   method: Method,
   ...params: Parameters<ForceFunction<ReplWorker[Domain][Method]>> extends [infer Params] ? [Params] : []
-): Promise<ReturnType<ForceFunction<ReplWorker[Domain][Method]>>>
+): Promise<Awaited<ReturnType<ForceFunction<ReplWorker[Domain][Method]>>>>
 
 export async function workerInvoke(domain: string, method: string, params?: any) {
   if (loadedDeferred) {

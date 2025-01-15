@@ -7,6 +7,7 @@ import { Runner } from './components/runner/Runner.tsx'
 import { SettingsDialog, type SettingsTab } from './components/settings/Settings.tsx'
 import { Updater } from './components/Updater.tsx'
 import { Resizable, ResizableHandle, ResizablePanel } from './lib/components/ui/resizable.tsx'
+import { Toaster } from './lib/components/ui/sonner.tsx'
 
 const Editor = lazy(() => import('./components/editor/Editor.tsx'))
 
@@ -23,6 +24,7 @@ export function App() {
 
   return (
     <div class="flex h-screen w-screen flex-col overflow-hidden">
+      <Toaster />
       <iframe
         ref={workerIframe}
         class="invisible size-0"

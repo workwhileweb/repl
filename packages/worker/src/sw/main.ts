@@ -1,6 +1,6 @@
 import { unknownToError } from '@fuman/utils'
 import { IS_SAFARI } from '../utils/env.ts'
-import { handleAvatarRequest } from './avatar.ts'
+import { clearAvatarCache, handleAvatarRequest } from './avatar.ts'
 import { requestCache } from './cache.ts'
 import { clearCache, forgetScript, handleRuntimeRequest, uploadScript } from './runtime.ts'
 
@@ -55,6 +55,7 @@ self.onoffline = self.ononline = () => {
 export type SwMessage =
   | { event: 'UPLOAD_SCRIPT', name: string, files: Record<string, string> }
   | { event: 'FORGET_SCRIPT', name: string }
+  | { event: 'CLEAR_AVATAR_CACHE', accountId: string }
   | { event: 'CLEAR_CACHE' }
 
 function handleMessage(msg: SwMessage) {
@@ -69,6 +70,10 @@ function handleMessage(msg: SwMessage) {
     }
     case 'CLEAR_CACHE': {
       clearCache()
+      break
+    }
+    case 'CLEAR_AVATAR_CACHE': {
+      clearAvatarCache(msg.accountId)
       break
     }
   }
