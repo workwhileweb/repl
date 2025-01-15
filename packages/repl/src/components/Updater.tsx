@@ -2,6 +2,7 @@ import { filesize } from 'filesize'
 import { workerInvoke, workerOn } from 'mtcute-repl-worker/client'
 import { createSignal, onMount } from 'solid-js'
 import { Spinner } from '../lib/components/ui/spinner.tsx'
+import { $versions } from '../store/versions.ts'
 
 export interface UpdaterProps {
   onComplete: () => void
@@ -14,7 +15,8 @@ export function Updater(props: UpdaterProps) {
 
   async function runUpdater() {
     setStep('Checking for updates...')
-    const updates = await workerInvoke('vfs', 'checkForUpdates')
+    const { updates, latestVersions } = await workerInvoke('vfs', 'checkForUpdates')
+    $versions.set(latestVersions)
 
     if (Object.keys(updates).length === 0) {
       props.onComplete()

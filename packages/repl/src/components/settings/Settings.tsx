@@ -7,6 +7,7 @@ import {
   DialogContent,
 } from '../../lib/components/ui/dialog.tsx'
 import { cn } from '../../lib/utils.ts'
+import { AboutTab } from './AboutTab.tsx'
 import { AccountsTab } from './AccountsTab.tsx'
 
 export type SettingsTab =
@@ -31,13 +32,13 @@ const tabs: Array<TabDefinition> = [
     id: 'libraries',
     title: 'Libraries',
     icon: LucideLibrary,
-    content: () => <div>asd</div>,
+    content: () => <div class="p-3">Not implemented yet...</div>,
   },
   {
     id: 'about',
     title: 'About',
     icon: LucideCode,
-    content: () => <div>asd</div>,
+    content: AboutTab,
   },
 ]
 

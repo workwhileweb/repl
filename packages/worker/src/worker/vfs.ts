@@ -13,11 +13,14 @@ async function getVfs() {
 }
 
 export class ReplWorkerVfs {
-  async checkForUpdates(): Promise<Record<string, string>> {
+  async checkForUpdates() {
     const latestVersions = await getLatestVersions()
     const versions = await getPackagesToDownload(latestVersions, await getVfs())
 
-    return versions
+    return {
+      updates: versions,
+      latestVersions,
+    }
   }
 
   async downloadPackages(packages: Record<string, string>) {
