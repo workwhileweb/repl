@@ -1,5 +1,5 @@
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
-import { LucideCheck, LucideChevronDown, LucideExternalLink, LucideLogIn, LucideSettings, LucideUsers } from 'lucide-solid'
+import { LucideCheck, LucideChevronDown, LucideExternalLink, LucideLogIn, LucideUsers } from 'lucide-solid'
 import { SiGithub } from 'solid-icons/si'
 import { For, Show } from 'solid-js'
 import { Button } from '../../lib/components/ui/button.tsx'
@@ -80,16 +80,12 @@ export function NavbarMenu(props: {
                 </DropdownMenuItem>
               )}
             </For>
-            <DropdownMenuItem onClick={props.onShowAccounts}>
-              <LucideUsers class="mr-2 size-4" />
-              Manage accounts
-            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={props.onShowSettings}>
-              <LucideSettings class="mr-2 size-4" />
-              Settings
+            <DropdownMenuItem onClick={props.onShowAccounts}>
+              <LucideUsers class="mr-2 size-4" />
+              Manage accounts
             </DropdownMenuItem>
             <DropdownMenuItem
               as="a"
