@@ -40,7 +40,6 @@ function AddAccountDialog(props: {
   show: boolean
   testMode: boolean
   onClose: () => void
-  // onAccountCreated: (accountId: string, user: User, dcId: number) => void
 }) {
   const [accountId, setAccountId] = createSignal<string | undefined>(undefined)
   let closeTimeout: timers.Timer | undefined
@@ -51,7 +50,6 @@ function AddAccountDialog(props: {
       finished = false
     } else {
       props.onClose()
-      // client()?.close()
       timers.clearTimeout(closeTimeout)
     }
   }

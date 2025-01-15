@@ -2,11 +2,12 @@ import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import type { CustomTypeScriptWorker } from '../editor/utils/custom-worker.ts'
 import { timers } from '@fuman/utils'
 import { persistentAtom } from '@nanostores/persistent'
-import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideUnplug } from 'lucide-solid'
+import { LucideCheck, LucideCheckSquare, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideSquare, LucideUnplug } from 'lucide-solid'
 import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { type mtcute, workerInvoke } from 'mtcute-repl-worker/client'
 import { nanoid } from 'nanoid'
 import { createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
+import { Dynamic } from 'solid-js/web'
 import { Button } from '../../lib/components/ui/button.tsx'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuGroupLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../../lib/components/ui/dropdown-menu.tsx'
 import { cn } from '../../lib/utils.ts'
@@ -19,6 +20,10 @@ const $disconnectAfterSecs = persistentAtom('repl:disconnectAfterSecs', 60, {
   encode: String,
   decode: Number,
 })
+const $enableUpdates = persistentAtom('repl:enableUpdates', true, {
+  encode: String,
+  decode: value => value === 'true',
+})
 
 export function Runner() {
   const [devtoolsIframe, setDevtoolsIframe] = createSignal<HTMLIFrameElement | undefined>()
@@ -29,6 +34,7 @@ export function Runner() {
   const [connectionState, setConnectionState] = createSignal<mtcute.ConnectionState>('offline')
   const currentAccountId = useStore($activeAccountId)
   const disconnectAfterSecs = useStore($disconnectAfterSecs)
+  const enableUpdates = useStore($enableUpdates)
 
   let currentScriptId: string | undefined
   let deadTimer: timers.Timer | undefined
@@ -67,6 +73,7 @@ export function Runner() {
       iframe.contentWindow!.postMessage({
         event: 'INIT',
         accountId: currentAccountId(),
+        logUpdates: enableUpdates(),
       }, '*')
       setRunnerLoaded(true)
       deadTimer = timers.setTimeout(() => {
@@ -180,11 +187,20 @@ export function Runner() {
   }
 
   function handleDisconnect() {
-    runnerIframe()?.contentWindow!.postMessage({ event: 'DISCONNECT' }, '*')
+    runnerIframe()?.contentWindow?.postMessage({ event: 'DISCONNECT' }, '*')
   }
 
   function handleConnect() {
-    runnerIframe()?.contentWindow!.postMessage({ event: 'RECONNECT' }, '*')
+    runnerIframe()?.contentWindow?.postMessage({ event: 'RECONNECT' }, '*')
+  }
+
+  function handleToggleUpdates() {
+    const newValue = !enableUpdates()
+    $enableUpdates.set(newValue)
+    runnerIframe()?.contentWindow?.postMessage({
+      event: 'TOGGLE_UPDATES',
+      value: newValue,
+    }, '*')
   }
 
   return (
@@ -249,15 +265,10 @@ export function Runner() {
                 onClick={connectionState() === 'offline' ? handleConnect : handleDisconnect}
                 class="text-xs"
               >
-                {connectionState() === 'offline' ? (
-                  <LucidePlug
-                    class="mr-2 size-3"
-                  />
-                ) : (
-                  <LucideUnplug
-                    class="mr-2 size-3"
-                  />
-                )}
+                <Dynamic
+                  component={connectionState() === 'offline' ? LucidePlug : LucideUnplug}
+                  class="mr-2 size-3"
+                />
                 {connectionState() === 'offline' ? 'Connect' : 'Disconnect'}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -268,6 +279,13 @@ export function Runner() {
                   class="mr-2 size-3"
                 />
                 Restart runner
+              </DropdownMenuItem>
+              <DropdownMenuItem class="text-xs" onClick={handleToggleUpdates}>
+                <Dynamic
+                  component={enableUpdates() ? LucideCheckSquare : LucideSquare}
+                  class="mr-2 size-3"
+                />
+                Log updates
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>

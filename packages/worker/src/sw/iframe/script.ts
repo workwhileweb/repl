@@ -29,6 +29,7 @@ chobitsu.setOnMessage((message: string) => {
 
 let lastAccountId: string | undefined
 let lastConnectionState: ConnectionState | undefined
+let logUpdates = false
 
 function initClient(accountId: string) {
   lastAccountId = accountId
@@ -58,6 +59,11 @@ function initClient(accountId: string) {
     lastConnectionState = state
     window.parent.postMessage({ event: 'CONNECTION_STATE', value: state }, HOST_ORIGIN)
   })
+  window.tg.onUpdate.add((update) => {
+    if (!logUpdates) return
+    // eslint-disable-next-line no-console
+    console.log('%c[UPDATE]%c %s: %o', 'color: #8d7041', 'color: unset', update.name, update.data)
+  })
 }
 
 window.addEventListener('message', ({ data }) => {
@@ -81,7 +87,9 @@ window.addEventListener('message', ({ data }) => {
     sendToDevtools({ method: 'DOM.documentUpdated' })
 
     initClient(data.accountId)
+    logUpdates = data.logUpdates
     window.tg?.connect()
+    window.tg!.startUpdatesLoop()
 
     setInterval(() => {
       window.parent.postMessage({ event: 'PING' }, HOST_ORIGIN)
@@ -112,6 +120,7 @@ window.addEventListener('message', ({ data }) => {
     if (lastConnectionState !== 'offline') {
       window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
       window.tg.connect()
+      window.tg.startUpdatesLoop()
     }
   } else if (data.event === 'DISCONNECT') {
     // todo: we dont have a clean way to disconnect i think
@@ -122,6 +131,9 @@ window.addEventListener('message', ({ data }) => {
     window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
   } else if (data.event === 'RECONNECT') {
     window.tg.connect()
+  } else if (data.event === 'TOGGLE_UPDATES') {
+    if (data.value === logUpdates) return
+    logUpdates = data.value
   }
 })
 
