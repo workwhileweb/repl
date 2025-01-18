@@ -81,10 +81,7 @@ export function NavbarMenu(props: {
                     account={account}
                   />
                   <span
-                    class={cn(
-                      'ml-2',
-                      account.id === activeAccount()?.id ? 'font-semibold' : 'text-muted-foreground',
-                    )}
+                    class="ml-2"
                   >
                     {account.name}
                   </span>
