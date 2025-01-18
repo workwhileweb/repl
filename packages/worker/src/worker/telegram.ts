@@ -45,6 +45,7 @@ async function handleAuthSuccess(accountId: string, user: User) {
   const testMode = client.params.testMode ?? false
 
   if ($accounts.get().some(it => it.telegramId === user.id)) {
+    await client.close()
     await deleteAccount(accountId)
     throw new Error(`Account already exists (user ID: ${user.id})`)
   }
