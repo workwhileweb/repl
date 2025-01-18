@@ -116,7 +116,7 @@ export function NavbarMenu(props: {
                       <span>Light</span>
                     </div>
                     <div>
-                      <LucideCheck class={`ml-auto size-4 ${localColorMode() !== 'light' ? 'hidden' : ''}`} />
+                      <LucideCheck class={cn('ml-auto size-4', localColorMode() !== 'light' && 'hidden')} />
                     </div>
                   </div>
                 </DropdownMenuItem>
@@ -127,7 +127,7 @@ export function NavbarMenu(props: {
                       <span>Dark</span>
                     </div>
                     <div>
-                      <LucideCheck class={`ml-auto size-4 ${localColorMode() !== 'dark' ? 'hidden' : ''}`} />
+                      <LucideCheck class={cn('ml-auto size-4', localColorMode() !== 'dark' && 'hidden')} />
                     </div>
                   </div>
                 </DropdownMenuItem>
@@ -138,7 +138,7 @@ export function NavbarMenu(props: {
                       <span>System</span>
                     </div>
                     <div>
-                      <LucideCheck class={`ml-auto size-4 ${localColorMode() !== 'system' ? 'hidden' : ''}`} />
+                      <LucideCheck class={cn('ml-auto size-4', localColorMode() !== 'system' && 'hidden')} />
                     </div>
                   </div>
                 </DropdownMenuItem>
