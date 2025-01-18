@@ -1,7 +1,7 @@
 import { ColorModeProvider, ColorModeScript } from '@kobalte/core'
 
 import { workerInit } from 'mtcute-repl-worker/client'
-import { createSignal, lazy, onMount, Show } from 'solid-js'
+import { createSignal, lazy, onCleanup, onMount, Show } from 'solid-js'
 import { EditorTabs } from './components/editor/EditorTabs.tsx'
 import { NavbarMenu } from './components/nav/NavbarMenu.tsx'
 import { Runner } from './components/runner/Runner.tsx'
@@ -24,6 +24,16 @@ export function App() {
 
   onMount(() => {
     workerInit(workerIframe)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.metaKey && e.key === ',') {
+        setShowSettings(true)
+        e.preventDefault()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    onCleanup(() => window.removeEventListener('keydown', handleKeyDown))
   })
 
   return (

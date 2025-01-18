@@ -299,7 +299,7 @@ function OtpStep(props: StepProps<'otp'>) {
 
   const [innerInputRef, setInnerInputRef] = createSignal<HTMLInputElement | undefined>()
 
-  createEffect(() => {
+  onMount(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key >= '0' && e.key <= '9') {
         innerInputRef()?.focus()

@@ -64,6 +64,21 @@ async function focusConsole(tabbedPane) {
   const injectCss = await waitForElement('#inject-css', document.body);
   const rootView = await waitForElement('.root-view', document.body);
   rootView.appendChild(injectCss);
+
+  // forward some keyboard shortcuts to the parent window
+  document.addEventListener('keydown', (e) => {
+    if (!(e.metaKey && e.key === ',')) return
+
+    const options = {
+      key: e.key,
+      ctrlKey: e.ctrlKey,
+      metaKey: e.metaKey,
+    }
+    const keyboardEvent = new KeyboardEvent('keydown', options)
+    window.parent.dispatchEvent(keyboardEvent)
+
+    e.preventDefault()
+  }, true)
 })();
 `
 
