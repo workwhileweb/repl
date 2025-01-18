@@ -88,8 +88,11 @@ window.addEventListener('message', ({ data }) => {
 
     initClient(data.accountId)
     logUpdates = data.logUpdates
-    window.tg?.connect()
-    window.tg!.startUpdatesLoop()
+
+    if (window.tg !== undefined) {
+      window.tg.connect()
+      window.tg.startUpdatesLoop()
+    }
 
     setInterval(() => {
       window.parent.postMessage({ event: 'PING' }, HOST_ORIGIN)
@@ -130,7 +133,9 @@ window.addEventListener('message', ({ data }) => {
     }
     window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
   } else if (data.event === 'RECONNECT') {
-    window.tg.connect()
+    if (window.tg !== undefined) {
+      window.tg.connect()
+    }
   } else if (data.event === 'TOGGLE_UPDATES') {
     if (data.value === logUpdates) return
     logUpdates = data.value
