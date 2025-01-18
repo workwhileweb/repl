@@ -24,7 +24,7 @@ const $enableUpdates = persistentAtom('repl:enableUpdates', true, {
   encode: String,
   decode: value => value === 'true',
 })
-const $enableVerbose = persistentAtom('repl:verboseLogs', true, {
+const $enableVerbose = persistentAtom('repl:verboseLogs', false, {
   encode: String,
   decode: value => value === 'true',
 })
