@@ -17,7 +17,7 @@ export function AboutTab() {
   }
 
   return (
-    <div class="flex h-full flex-col items-center gap-4 px-3 py-16">
+    <div class="mt-[-2%] flex h-full flex-col items-center justify-center gap-4 px-3 py-16">
       <img
         class="size-24"
         src="https://mtcute.dev/mtcute-logo.svg"
