@@ -66,7 +66,8 @@ export function PhoneInput(props: PhoneInputProps) {
 
     // try to find matching country code
     // first sanitize input
-    const rawPhone = value.slice(1).replace(/\D/g, '')
+    const rawPhone = value[0] === '+' ? value.slice(1) : value
+    const sanitizedPhone = rawPhone.replace(/\D/g, '')
     el.value = `+${value.replace(/[^\d ]/g, '')}`
 
     // pass 1: find matching countries by country code
@@ -75,7 +76,7 @@ export function PhoneInput(props: PhoneInputProps) {
 
     for (const country of countriesList()) {
       for (const code of country.countryCodes) {
-        if (rawPhone.startsWith(code.countryCode)) {
+        if (sanitizedPhone.startsWith(code.countryCode)) {
           matching.push([country, code])
         }
         if (code.prefixes) {
@@ -99,7 +100,7 @@ export function PhoneInput(props: PhoneInputProps) {
         if (code.prefixes === undefined) continue
         for (const prefix of code.prefixes) {
           const fullPrefix = code.countryCode + prefix
-          if (rawPhone.startsWith(fullPrefix)) {
+          if (sanitizedPhone.startsWith(fullPrefix)) {
             match = item
             foundByPrefix = true
             break
@@ -108,7 +109,7 @@ export function PhoneInput(props: PhoneInputProps) {
       }
 
       // 3: if we couldnt refine and the country code is the same as countryCode, do nothing
-      if (!foundByPrefix && match && match[1].countryCode === rawPhone) {
+      if (!foundByPrefix && match && match[1].countryCode === sanitizedPhone) {
         match = undefined
       }
 
@@ -118,11 +119,11 @@ export function PhoneInput(props: PhoneInputProps) {
     }
 
     setChosenCode(chosenCode)
-    props.onChange?.(rawPhone)
+    props.onChange?.(sanitizedPhone)
 
     if (chosenCode && chosenCode.patterns) {
       // format the number
-      const numberWithoutCode = rawPhone.slice(chosenCode.countryCode.length)
+      const numberWithoutCode = sanitizedPhone.slice(chosenCode.countryCode.length)
 
       for (const pattern of chosenCode.patterns) {
         let numberIdx = 0
