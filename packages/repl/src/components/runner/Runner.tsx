@@ -24,6 +24,10 @@ const $enableUpdates = persistentAtom('repl:enableUpdates', true, {
   encode: String,
   decode: value => value === 'true',
 })
+const $enableVerbose = persistentAtom('repl:verboseLogs', true, {
+  encode: String,
+  decode: value => value === 'true',
+})
 
 export function Runner(props: { isResizing: boolean }) {
   const [devtoolsIframe, setDevtoolsIframe] = createSignal<HTMLIFrameElement | undefined>()
@@ -35,6 +39,7 @@ export function Runner(props: { isResizing: boolean }) {
   const currentAccountId = useStore($activeAccountId)
   const disconnectAfterSecs = useStore($disconnectAfterSecs)
   const enableUpdates = useStore($enableUpdates)
+  const enableVerbose = useStore($enableVerbose)
 
   let currentScriptId: string | undefined
   let deadTimer: timers.Timer | undefined
@@ -74,6 +79,7 @@ export function Runner(props: { isResizing: boolean }) {
         event: 'INIT',
         accountId: currentAccountId(),
         logUpdates: enableUpdates(),
+        verboseLogs: enableVerbose(),
       }, '*')
       setRunnerLoaded(true)
       deadTimer = timers.setTimeout(() => {
@@ -203,6 +209,15 @@ export function Runner(props: { isResizing: boolean }) {
     }, '*')
   }
 
+  function handleToggleVerbose() {
+    const newValue = !enableVerbose()
+    $enableVerbose.set(newValue)
+    runnerIframe()?.contentWindow?.postMessage({
+      event: 'TOGGLE_VERBOSE',
+      value: newValue,
+    }, '*')
+  }
+
   return (
     <>
       <div class="flex shrink-0 flex-row p-1">
@@ -286,6 +301,13 @@ export function Runner(props: { isResizing: boolean }) {
                   class="mr-2 size-3"
                 />
                 Log updates
+              </DropdownMenuItem>
+              <DropdownMenuItem class="text-xs" onClick={handleToggleVerbose}>
+                <Dynamic
+                  component={enableVerbose() ? LucideCheckSquare : LucideSquare}
+                  class="mr-2 size-3"
+                />
+                Verbose logs
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>

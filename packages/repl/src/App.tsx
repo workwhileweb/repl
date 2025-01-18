@@ -16,7 +16,9 @@ export function App() {
   const [updating, setUpdating] = createSignal(true)
   const [showSettings, setShowSettings] = createSignal(false)
   const [settingsTab, setSettingsTab] = createSignal<SettingsTab>('accounts')
+
   const [isResizing, setIsResizing] = createSignal(false)
+  const [sizes, setSizes] = createSignal([0.5, 0.5])
 
   let workerIframe!: HTMLIFrameElement
 
@@ -61,12 +63,19 @@ export function App() {
             />
           )}
         >
-          <Resizable orientation="horizontal" class="size-full max-h-[calc(100vh-57px)]">
+          <Resizable sizes={sizes()} onSizesChange={e => setSizes(e)} orientation="horizontal" class="size-full max-h-[calc(100vh-57px)]">
             <ResizablePanel class="h-full overflow-x-auto overflow-y-hidden" minSize={0.2}>
               <EditorTabs />
               <Editor class="size-full" />
             </ResizablePanel>
-            <ResizableHandle withHandle onMouseDown={() => setIsResizing(true)} onMouseUp={() => setIsResizing(false)} />
+            <ResizableHandle
+              withHandle
+              onDblClick={() => {
+                setSizes([0.5, 0.5])
+              }}
+              onMouseDown={() => setIsResizing(true)}
+              onMouseUp={() => setIsResizing(false)}
+            />
             <ResizablePanel
               class="flex max-h-full flex-col overflow-hidden"
               minSize={0.2}

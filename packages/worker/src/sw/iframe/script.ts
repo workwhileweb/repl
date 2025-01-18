@@ -30,8 +30,9 @@ chobitsu.setOnMessage((message: string) => {
 let lastAccountId: string | undefined
 let lastConnectionState: ConnectionState | undefined
 let logUpdates = false
+let verboseLogs = false
 
-function initClient(accountId: string) {
+function initClient(accountId: string, verbose: boolean) {
   lastAccountId = accountId
 
   let extraConfig: Partial<TelegramClientOptions> | undefined
@@ -53,6 +54,7 @@ function initClient(accountId: string) {
     apiId: import.meta.env.VITE_API_ID,
     apiHash: import.meta.env.VITE_API_HASH,
     storage: `mtcute:${accountId}`,
+    logLevel: verbose ? 5 : 2,
     ...extraConfig,
   })
   window.tg.onConnectionState.add((state) => {
@@ -86,7 +88,7 @@ window.addEventListener('message', ({ data }) => {
     sendToChobitsu({ method: 'DOMStorage.enable' })
     sendToDevtools({ method: 'DOM.documentUpdated' })
 
-    initClient(data.accountId)
+    initClient(data.accountId, data.verboseLogs)
     logUpdates = data.logUpdates
 
     if (window.tg !== undefined) {
@@ -118,7 +120,7 @@ window.addEventListener('message', ({ data }) => {
     chobitsu.sendRawMessage(data.value)
   } else if (data.event === 'ACCOUNT_CHANGED') {
     window.tg?.close()
-    initClient(data.accountId)
+    initClient(data.accountId, data.verboseLogs)
 
     if (lastConnectionState !== 'offline') {
       window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
@@ -129,7 +131,7 @@ window.addEventListener('message', ({ data }) => {
     // todo: we dont have a clean way to disconnect i think
     window.tg?.close()
     if (lastAccountId) {
-      initClient(lastAccountId)
+      initClient(lastAccountId, data.verboseLogs)
     }
     window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
   } else if (data.event === 'RECONNECT') {
@@ -139,6 +141,10 @@ window.addEventListener('message', ({ data }) => {
   } else if (data.event === 'TOGGLE_UPDATES') {
     if (data.value === logUpdates) return
     logUpdates = data.value
+  } else if (data.event === 'TOGGLE_VERBOSE') {
+    if (data.value === verboseLogs) return
+    verboseLogs = data.value;
+    (window.tg.log as any).level = verboseLogs ? 5 : 2
   }
 })
 
