@@ -25,7 +25,7 @@ const $enableUpdates = persistentAtom('repl:enableUpdates', true, {
   decode: value => value === 'true',
 })
 
-export function Runner() {
+export function Runner(props: { isResizing: boolean }) {
   const [devtoolsIframe, setDevtoolsIframe] = createSignal<HTMLIFrameElement | undefined>()
   const [runnerIframe, setRunnerIframe] = createSignal<HTMLIFrameElement>()
   const [runnerLoaded, setRunnerLoaded] = createSignal(false)
@@ -315,7 +315,7 @@ export function Runner() {
       </div>
       <div class="h-px shrink-0 bg-border" />
       <Devtools
-        class="size-full grow-0"
+        class={cn('size-full grow-0', props.isResizing && 'pointer-events-none')}
         iframeRef={setDevtoolsIframe}
       />
     </>

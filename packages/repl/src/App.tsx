@@ -16,6 +16,7 @@ export function App() {
   const [updating, setUpdating] = createSignal(true)
   const [showSettings, setShowSettings] = createSignal(false)
   const [settingsTab, setSettingsTab] = createSignal<SettingsTab>('accounts')
+  const [isResizing, setIsResizing] = createSignal(false)
 
   let workerIframe!: HTMLIFrameElement
 
@@ -65,12 +66,12 @@ export function App() {
               <EditorTabs />
               <Editor class="size-full" />
             </ResizablePanel>
-            <ResizableHandle withHandle />
+            <ResizableHandle withHandle onMouseDown={() => setIsResizing(true)} onMouseUp={() => setIsResizing(false)} />
             <ResizablePanel
               class="flex max-h-full flex-col overflow-hidden"
               minSize={0.2}
             >
-              <Runner />
+              <Runner isResizing={isResizing()} />
             </ResizablePanel>
           </Resizable>
         </Show>
