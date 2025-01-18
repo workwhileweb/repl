@@ -89,6 +89,14 @@ module.exports = {
           '0%, 70%, 100%': { opacity: 1 },
           '20%, 50%': { opacity: 0 },
         },
+        'scale-up': {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(2) translateY(10px)' },
+        },
+        'fade-out-down': {
+          '0%': { opacity: 1, transform: 'scale(1)' },
+          '100%': { opacity: 0, transform: 'scale(0.8) translateY(16px)' },
+        },
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '1rem' }],
@@ -99,6 +107,8 @@ module.exports = {
         'content-show': 'content-show 0.2s ease-out',
         'content-hide': 'content-hide 0.2s ease-out',
         'caret-blink': 'caret-blink 1.2s ease-out infinite',
+        'scale-up': 'scale-up 1.0s cubic-bezier(0.33, 1, 0.68, 1) 1s',
+        'fade-out-down': 'fade-out-down 0.25s cubic-bezier(0.33, 1, 0.68, 1) 1s',
       },
     },
   },

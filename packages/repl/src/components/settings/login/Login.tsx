@@ -1,6 +1,7 @@
 import type { mtcute, TelegramAccount } from 'mtcute-repl-worker/client'
+import type { Setter } from 'solid-js'
 import { unknownToError } from '@fuman/utils'
-import { LucideChevronRight } from 'lucide-solid'
+import { LucideChevronRight, MessageSquareMore } from 'lucide-solid'
 import { workerInvoke, workerOn } from 'mtcute-repl-worker/client'
 import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js'
 import { Button } from '../../../lib/components/ui/button.tsx'
@@ -20,12 +21,13 @@ export type LoginStep =
   | 'done'
 export interface StepContext {
   qr: void
-  phone: void
+  phone: { setInputRef: Setter<HTMLInputElement | undefined> }
   otp: {
+    setInputRef: Setter<HTMLInputElement | undefined>
     phone: string
     code: mtcute.SentCode
   }
-  password: void
+  password: { setInputRef: Setter<HTMLInputElement | undefined> }
   done: { account: TelegramAccount }
 }
 
@@ -105,7 +107,6 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
   const [phone, setPhone] = createSignal('')
   const [error, setError] = createSignal<string | undefined>()
   const [loading, setLoading] = createSignal(false)
-  const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
 
   const abortController = new AbortController()
   const handleSubmit = async () => {
@@ -120,8 +121,9 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
       })
       setLoading(false)
       props.setStep('otp', {
-        code,
         phone: phone(),
+        code,
+        setInputRef: props.ctx.setInputRef,
       })
     } catch (e) {
       setLoading(false)
@@ -133,7 +135,6 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
     }
   }
   onCleanup(() => abortController.abort())
-  createEffect(() => inputRef()?.focus())
 
   return (
     <div class="flex h-full flex-col items-center justify-center">
@@ -161,7 +162,7 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
             onChange={setPhone}
             onSubmit={handleSubmit}
             disabled={loading()}
-            ref={setInputRef}
+            ref={props.ctx.setInputRef}
           />
           <Button
             variant="default"
@@ -237,8 +238,9 @@ function OtpStep(props: StepProps<'otp'>) {
       })
       setLoading(false)
       props.setStep('otp', {
-        code,
+        setInputRef: props.ctx.setInputRef,
         phone: props.ctx.phone,
+        code,
       })
     } catch (e) {
       setLoading(false)
@@ -274,29 +276,43 @@ function OtpStep(props: StepProps<'otp'>) {
   const description = () => {
     switch (props.ctx.code.type) {
       case 'app':
-        return 'We have sent you a one-time code to your Telegram app'
+        return 'We have sent you a one-time code to your Telegram app.'
       case 'sms':
       case 'sms_word':
       case 'sms_phrase':
-        return 'We have sent you a one-time code to your phone'
+        return 'We have sent you a one-time code to your phone.'
       case 'fragment':
-        return 'We have sent you a one-time code to your Fragment anonymous number'
+        return 'We have sent you a one-time code to your Fragment anonymous number.'
       case 'call':
-        return 'We are calling you to dictate your one-time code'
+        return 'We are calling you to dictate your one-time code.'
       case 'flash_call':
       case 'missed_call':
-        return `We are calling you, put the last ${props.ctx.code.length} digits of the number we're calling you from`
+        return `We are calling you, put the last ${props.ctx.code.length} digits of the number we're calling you from.`
       case 'email':
-        return 'We have sent you an email with a one-time code'
+        return 'We have sent you an email with a one-time code.'
       case 'email_required':
-        return 'Email setup is required, please do it in your Telegram app'
+        return 'Email setup is required, please do it in your Telegram app.'
       default:
-        return `Unknown code type: ${props.ctx.code.type}`
+        return `Unknown code type: ${props.ctx.code.type}.`
     }
   }
 
+  const [innerInputRef, setInnerInputRef] = createSignal<HTMLInputElement | undefined>()
+
+  createEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        innerInputRef()?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    onCleanup(() => window.removeEventListener('keydown', handleKeyDown))
+  })
+
   return (
     <div class="flex flex-col items-center justify-center">
+      <MessageSquareMore class="size-16 pb-2" strokeWidth={1.5} />
       <h2 class="text-xl font-bold">
         {props.ctx.phone}
       </h2>
@@ -310,7 +326,7 @@ function OtpStep(props: StepProps<'otp'>) {
       <div class="mt-4 text-center text-sm text-muted-foreground">
         {description()}
       </div>
-      <div class="mt-4 flex flex-col">
+      <div class="mt-4 flex flex-col items-center text-center">
         <Show
           when={props.ctx.code.type !== 'sms_phrase' && props.ctx.code.type !== 'sms_word'}
           fallback={(
@@ -327,7 +343,7 @@ function OtpStep(props: StepProps<'otp'>) {
                       handleSubmit()
                     }
                   }}
-                  ref={setInputRef}
+                  ref={(e) => { setInputRef(e); setInnerInputRef(e) }}
                 />
               </TextFieldFrame>
               <TextFieldErrorMessage>{error()}</TextFieldErrorMessage>
@@ -342,7 +358,7 @@ function OtpStep(props: StepProps<'otp'>) {
           >
             <OTPFieldInput
               disabled={loading()}
-              ref={setInputRef}
+              ref={(e) => { setInputRef(e); setInnerInputRef(e) }}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleSubmit()
@@ -361,13 +377,11 @@ function OtpStep(props: StepProps<'otp'>) {
             </OTPFieldGroup>
           </OTPField>
           {error() && (
-            <div class="mt-1 text-sm text-error-foreground">
-              {error()}
-            </div>
+            <div class="mt-1 text-sm text-error-foreground">{error()}</div>
           )}
         </Show>
 
-        <div class="mt-2 flex w-full justify-between">
+        <div class="mt-2 flex items-center align-middle">
           <Button
             variant="outline"
             size="sm"
@@ -378,14 +392,6 @@ function OtpStep(props: StepProps<'otp'>) {
             {countdown() > 0 && (
               ` (${countdown()})`
             )}
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={loading()}
-          >
-            Next
           </Button>
         </div>
       </div>
@@ -474,9 +480,9 @@ function DoneStep(props: StepProps<'done'>) {
     <div class="flex flex-col items-center justify-center">
       <AccountAvatar
         account={props.ctx.account}
-        class="mb-4 size-24 shadow-sm"
+        class="mb-4 size-24 animate-scale-up shadow-sm fill-mode-forwards"
       />
-      <div class="text-center font-medium">
+      <div class="animate-fade-out-down text-center font-medium fill-mode-forwards">
         Welcome,
         {' '}
         {props.ctx.account.name}
@@ -500,21 +506,23 @@ export function LoginForm(props: {
     props.onStepChange?.(step, ctx())
   }
 
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
+
   return (
     <div class={cn('flex h-full flex-col items-center justify-center gap-4', props.class)}>
-      <TransitionSlideLtr mode="outin">
+      <TransitionSlideLtr onAfterExit={() => inputRef()?.focus()} mode="outin">
         <Switch>
           <Match when={step() === 'qr'}>
             <QrLoginStep accountId={props.accountId} setStep={setStepWithCtx} />
           </Match>
           <Match when={step() === 'phone'}>
-            <PhoneNumberStep accountId={props.accountId} setStep={setStepWithCtx} />
+            <PhoneNumberStep accountId={props.accountId} setStep={setStepWithCtx} ctx={{ setInputRef }} />
           </Match>
           <Match when={step() === 'otp'}>
-            <OtpStep accountId={props.accountId} setStep={setStepWithCtx} ctx={ctx().otp!} />
+            <OtpStep accountId={props.accountId} setStep={setStepWithCtx} ctx={{ ...ctx().otp!, setInputRef }} />
           </Match>
           <Match when={step() === 'password'}>
-            <PasswordStep accountId={props.accountId} setStep={setStepWithCtx} />
+            <PasswordStep accountId={props.accountId} setStep={setStepWithCtx} ctx={{ setInputRef }} />
           </Match>
           <Match when={step() === 'done'}>
             <DoneStep
