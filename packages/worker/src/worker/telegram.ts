@@ -10,6 +10,7 @@ import { nanoid } from 'nanoid'
 import { renderSVG } from 'uqr'
 import { $accounts, $activeAccountId } from '../store/accounts.ts'
 import { swInvokeMethod } from '../sw/client.ts'
+import { waitForServiceWorkerInit } from '../sw/register.ts'
 import { createInternalClient, deleteAccount, importAccount } from '../utils/telegram.ts'
 import { emitEvent } from './utils.ts'
 
@@ -216,6 +217,7 @@ export class ReplWorkerTelegram {
   }
 
   async fetchAvatar(accountId: string) {
+    await waitForServiceWorkerInit()
     const res = await fetch(`/sw/avatar/${accountId}/avatar.jpg`)
     if (!res.ok) {
       return null

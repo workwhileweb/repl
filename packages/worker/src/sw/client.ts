@@ -1,7 +1,9 @@
 import type { SwMessage } from './main.ts'
 import { asNonNull, Deferred } from '@fuman/utils'
+import { waitForServiceWorkerInit } from './register.ts'
 
-export function getServiceWorker() {
+export async function getServiceWorker() {
+  await waitForServiceWorkerInit()
   return asNonNull(navigator.serviceWorker.controller)
 }
 
@@ -9,8 +11,8 @@ let registered = false
 let nextId = 0
 const pending = new Map<number, Deferred<any>>()
 
-export function swInvokeMethod(request: SwMessage) {
-  const sw = getServiceWorker()
+export async function swInvokeMethod(request: SwMessage) {
+  const sw = await getServiceWorker()
   if (!registered) {
     navigator.serviceWorker.addEventListener('message', (e) => {
       const { id, result, error } = (e as MessageEvent).data

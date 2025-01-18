@@ -1,4 +1,11 @@
+import { Deferred } from '@fuman/utils'
 import workerUrl from '../../sw.ts?worker&url'
+
+const swInitDeferred = new Deferred<void>()
+
+export async function waitForServiceWorkerInit() {
+  await swInitDeferred.promise
+}
 
 export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) {
@@ -35,5 +42,10 @@ export function registerServiceWorker() {
       url.searchParams.delete(FIX_KEY)
       history.pushState(undefined, '', url)
     }
+
+    swInitDeferred.resolve()
+  }).catch((err) => {
+    console.error('Failed to register service worker', err)
+    swInitDeferred.reject(err)
   })
 }

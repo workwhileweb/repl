@@ -88,3 +88,11 @@ self.onmessage = async (event) => {
     event.source!.postMessage({ id: msg.id, error: unknownToError(e).message })
   }
 }
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting())
+})
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim())
+})
