@@ -59,6 +59,7 @@ export async function importAccount(
       dcId: asNonNull(session.primaryDcs).main.id,
     }
   } catch (e) {
+    await client.close()
     await deleteAccount(accountId)
     if (is404) {
       throw new Error('Invalid session (auth key not found)')
