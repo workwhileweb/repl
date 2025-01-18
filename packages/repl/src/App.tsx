@@ -33,21 +33,23 @@ export function App() {
           class="invisible size-0"
           src={import.meta.env.VITE_IFRAME_URL}
         />
-        <nav class="relative flex h-auto w-full shrink-0 flex-row items-center overflow-hidden px-4 py-2">
+        <nav class="relative flex h-auto w-full shrink-0 flex-row items-center justify-between overflow-hidden px-4 py-2">
           <h1 class="font-mono text-base">
             @mtcute/
             <b>playground</b>
           </h1>
 
-          <NavbarMenu
-            onShowAccounts={() => {
-              setShowSettings(true)
-              setSettingsTab('accounts')
-            }}
-            onShowSettings={() => {
-              setShowSettings(true)
-            }}
-          />
+          <div class="flex items-center gap-1">
+            <NavbarMenu
+              onShowAccounts={() => {
+                setShowSettings(true)
+                setSettingsTab('accounts')
+              }}
+              onShowSettings={() => {
+                setShowSettings(true)
+              }}
+            />
+          </div>
         </nav>
         <div class="h-px shrink-0 bg-border" />
         <Show
