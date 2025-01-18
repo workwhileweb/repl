@@ -9,6 +9,7 @@ import {
 import { cn } from '../../lib/utils.ts'
 import { AboutTab } from './AboutTab.tsx'
 import { AccountsTab } from './AccountsTab.tsx'
+import { LibrariesTab } from './LibrariesTab.tsx'
 
 export type SettingsTab =
   | 'accounts'
@@ -32,7 +33,7 @@ const tabs: Array<TabDefinition> = [
     id: 'libraries',
     title: 'Libraries',
     icon: LucideLibrary,
-    content: () => <div class="p-3">Not implemented yet...</div>,
+    content: LibrariesTab,
   },
   {
     id: 'about',

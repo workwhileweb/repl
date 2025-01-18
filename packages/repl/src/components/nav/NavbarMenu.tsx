@@ -92,10 +92,6 @@ export function NavbarMenu(props: {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={props.onShowAccounts}>
-              <LucideUsers class="mr-2 size-4" />
-              Manage accounts
-            </DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger class="flex items-center justify-between">
                 <div class="flex flex-row items-center">
@@ -141,6 +137,10 @@ export function NavbarMenu(props: {
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+            <DropdownMenuItem onClick={props.onShowAccounts}>
+              <LucideUsers class="mr-2 size-4" />
+              Manage accounts
+            </DropdownMenuItem>
             <DropdownMenuItem
               as="a"
               class="cursor-pointer"
