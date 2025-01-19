@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "VITE_API_ID=${{ secrets.API_ID }}" >> .env
           echo "VITE_API_HASH=${{ secrets.API_HASH }}" >> .env
-          echo "VITE_IFRAME_URL=https://mtcute-repl-iframe.pages.dev" >> .env
+          echo "VITE_IFRAME_URL=https://mtcute-repl-iframe.tei.pet" >> .env
           echo "VITE_HOST_ORIGIN=https://play.mtcute.dev" >> .env
 
           echo "ignore-workspace-root-check=true" >> .npmrc
