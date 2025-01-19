@@ -6,13 +6,19 @@ config({
   path: fileURLToPath(new URL('../../../.env', import.meta.url)),
 })
 
+const defines: Record<string, string> = {}
+for (const [key, value] of Object.entries(process.env)) {
+  if (key.startsWith('VITE_')) {
+    defines[`import.meta.env.${key}`] = JSON.stringify(value)
+  }
+}
+
 await build({
   entryPoints: ['src/sw/iframe/script.ts'],
   bundle: true,
   format: 'esm',
   outfile: 'src/sw/iframe/script-bundled.js',
-  define: {
-    'import.meta.env.VITE_HOST_ORIGIN': `"${process.env.VITE_HOST_ORIGIN}"`,
-  },
+  define: defines,
   external: ['@mtcute/web'],
+  minify: true,
 })
