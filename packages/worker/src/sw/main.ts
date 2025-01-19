@@ -23,15 +23,6 @@ function onFetch(event: FetchEvent) {
   const req = event.request
   const url = new URL(req.url)
 
-  if (
-    import.meta.env.PROD
-      && !IS_SAFARI
-      && event.request.url.indexOf(`${location.origin}/`) === 0
-      && event.request.url.match(/\.(js|css|jpe?g|json|wasm|png|mp3|svg|tgs|ico|woff2?|ttf|webmanifest?)(?:\?.*)?$/)
-  ) {
-    return event.respondWith(requestCache(event))
-  }
-
   if (url.pathname.startsWith('/sw/')) {
     event.respondWith(
       handleSwRequest(req, url)
@@ -40,6 +31,15 @@ function onFetch(event: FetchEvent) {
           return new Response(err.message || err.toString(), { status: 500 })
         }),
     )
+  }
+
+  if (
+    import.meta.env.PROD
+      && !IS_SAFARI
+      && event.request.url.indexOf(`${location.origin}/`) === 0
+      && event.request.url.match(/\.(js|css|jpe?g|json|wasm|png|mp3|svg|tgs|ico|woff2?|ttf|webmanifest?)(?:\?.*)?$/)
+  ) {
+    return event.respondWith(requestCache(event))
   }
 }
 
