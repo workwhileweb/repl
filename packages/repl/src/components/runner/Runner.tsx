@@ -279,6 +279,7 @@ export function Runner(props: { isResizing: boolean }) {
               <DropdownMenuItem
                 onClick={connectionState() === 'offline' ? handleConnect : handleDisconnect}
                 class="text-xs"
+                disabled={currentAccountId() === undefined}
               >
                 <Dynamic
                   component={connectionState() === 'offline' ? LucidePlug : LucideUnplug}
@@ -335,7 +336,7 @@ export function Runner(props: { isResizing: boolean }) {
           </DropdownMenu>
         </div>
       </div>
-      <div class="h-px shrink-0 bg-border" />
+      <div class="bg-border h-px shrink-0" />
       <Devtools
         class={cn('size-full grow-0', props.isResizing && 'pointer-events-none')}
         iframeRef={setDevtoolsIframe}
