@@ -12,6 +12,7 @@ import {
   DropdownMenuGroupLabel,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -140,6 +141,7 @@ export function NavbarMenu(props: {
             <DropdownMenuItem onClick={props.onShowAccounts}>
               <LucideUsers class="mr-2 size-4" />
               Manage accounts
+              <DropdownMenuShortcut>⌘ ,</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem
               as="a"

@@ -2,14 +2,14 @@ import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import type { CustomTypeScriptWorker } from '../editor/utils/custom-worker.ts'
 import { timers } from '@fuman/utils'
 import { persistentAtom } from '@nanostores/persistent'
-import { LucideCheck, LucideCheckSquare, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideSquare, LucideUnplug } from 'lucide-solid'
+import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideUnplug } from 'lucide-solid'
 import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { type mtcute, workerInvoke } from 'mtcute-repl-worker/client'
 import { nanoid } from 'nanoid'
 import { createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { Button } from '../../lib/components/ui/button.tsx'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuGroupLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../../lib/components/ui/dropdown-menu.tsx'
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuGroupLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../../lib/components/ui/dropdown-menu.tsx'
 import { cn } from '../../lib/utils.ts'
 import { $activeAccountId } from '../../store/accounts.ts'
 import { $tabs } from '../../store/tabs.ts'
@@ -296,38 +296,30 @@ export function Runner(props: { isResizing: boolean }) {
                 />
                 Restart runner
               </DropdownMenuItem>
-              <DropdownMenuItem class="text-xs" onClick={handleToggleUpdates}>
-                <Dynamic
-                  component={enableUpdates() ? LucideCheckSquare : LucideSquare}
-                  class="mr-2 size-3"
-                />
+              <DropdownMenuCheckboxItem class="text-xs" checked={enableUpdates()} onClick={handleToggleUpdates}>
                 Log updates
-              </DropdownMenuItem>
-              <DropdownMenuItem class="text-xs" onClick={handleToggleVerbose}>
-                <Dynamic
-                  component={enableVerbose() ? LucideCheckSquare : LucideSquare}
-                  class="mr-2 size-3"
-                />
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem class="text-xs" checked={enableVerbose()} onClick={handleToggleVerbose}>
                 Verbose logs
-              </DropdownMenuItem>
+              </DropdownMenuCheckboxItem>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuGroupLabel class="text-xs">
                   Auto-disconnect after
                 </DropdownMenuGroupLabel>
-                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(60)}>
+                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(60)} closeOnSelect={false}>
                   1 minute
                   {disconnectAfterSecs() === 60 && <LucideCheck class="ml-auto size-3" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(300)}>
+                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(300)} closeOnSelect={false}>
                   5 minutes
                   {disconnectAfterSecs() === 300 && <LucideCheck class="ml-auto size-3" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(1500)}>
+                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(1500)} closeOnSelect={false}>
                   15 minutes
                   {disconnectAfterSecs() === 1500 && <LucideCheck class="ml-auto size-3" />}
                 </DropdownMenuItem>
-                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(-1)}>
+                <DropdownMenuItem class="text-xs" onClick={() => setInactivityTimeout(-1)} closeOnSelect={false}>
                   Never
                   {disconnectAfterSecs() === -1 && <LucideCheck class="ml-auto size-3" />}
                 </DropdownMenuItem>
