@@ -1,9 +1,9 @@
 import type { mtcute, TelegramAccount } from 'mtcute-repl-worker/client'
 import type { Setter } from 'solid-js'
 import { unknownToError } from '@fuman/utils'
-import { LucideChevronRight, MessageSquareMore } from 'lucide-solid'
+import { LucideChevronRight, LucideLockKeyhole, MessageSquareMore } from 'lucide-solid'
 import { workerInvoke, workerOn } from 'mtcute-repl-worker/client'
-import { createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js'
+import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import { OTPField, OTPFieldGroup, OTPFieldInput, OTPFieldSlot } from '../../../lib/components/ui/otp-field.tsx'
 import { Spinner } from '../../../lib/components/ui/spinner.tsx'
@@ -81,7 +81,7 @@ function QrLoginStep(props: StepProps<'qr'>) {
           />
         ) : <Spinner indeterminate class="size-10" />}
       </div>
-      <ol class="mt-4 list-inside list-decimal text-sm text-muted-foreground">
+      <ol class="text-muted-foreground mt-4 list-inside list-decimal text-sm">
         <li>Open Telegram on your phone</li>
         <li>
           Go to
@@ -147,7 +147,7 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
       <h2 class="mt-4 text-xl font-bold">
         Log in with phone number
       </h2>
-      <div class="mt-2 text-center text-sm text-muted-foreground">
+      <div class="text-muted-foreground mt-2 text-center text-sm">
         Please confirm your country code
         <br />
         and enter your phone number
@@ -177,7 +177,7 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
         <TextFieldErrorMessage>{error()}</TextFieldErrorMessage>
       </TextFieldRoot>
       <div class="flex-1" />
-      <div class="text-center text-sm text-muted-foreground">
+      <div class="text-muted-foreground text-center text-sm">
         or,
         {' '}
         <a
@@ -197,7 +197,6 @@ function OtpStep(props: StepProps<'otp'>) {
   const [error, setError] = createSignal<string | undefined>()
   const [loading, setLoading] = createSignal(false)
   const [countdown, setCountdown] = createSignal(0)
-  const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
 
   const abortController = new AbortController()
   const handleSubmit = async () => {
@@ -269,9 +268,9 @@ function OtpStep(props: StepProps<'otp'>) {
         setCountdown(0)
       }
     }, 1000)
+
     onCleanup(() => clearInterval(interval))
   })
-  createEffect(() => inputRef()?.focus())
 
   const description = () => {
     switch (props.ctx.code.type) {
@@ -297,19 +296,6 @@ function OtpStep(props: StepProps<'otp'>) {
     }
   }
 
-  const [innerInputRef, setInnerInputRef] = createSignal<HTMLInputElement | undefined>()
-
-  onMount(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key >= '0' && e.key <= '9') {
-        innerInputRef()?.focus()
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    onCleanup(() => window.removeEventListener('keydown', handleKeyDown))
-  })
-
   return (
     <div class="flex flex-col items-center justify-center">
       <MessageSquareMore class="size-16 pb-2" strokeWidth={1.5} />
@@ -323,7 +309,7 @@ function OtpStep(props: StepProps<'otp'>) {
         Wrong number?
       </div>
 
-      <div class="mt-4 text-center text-sm text-muted-foreground">
+      <div class="text-muted-foreground mt-4 text-center text-sm">
         {description()}
       </div>
       <div class="mt-4 flex flex-col items-center text-center">
@@ -343,7 +329,7 @@ function OtpStep(props: StepProps<'otp'>) {
                       handleSubmit()
                     }
                   }}
-                  ref={(e) => { setInputRef(e); setInnerInputRef(e) }}
+                  ref={props.ctx.setInputRef}
                 />
               </TextFieldFrame>
               <TextFieldErrorMessage>{error()}</TextFieldErrorMessage>
@@ -358,7 +344,7 @@ function OtpStep(props: StepProps<'otp'>) {
           >
             <OTPFieldInput
               disabled={loading()}
-              ref={(e) => { setInputRef(e); setInnerInputRef(e) }}
+              ref={props.ctx.setInputRef}
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
                   handleSubmit()
@@ -377,7 +363,7 @@ function OtpStep(props: StepProps<'otp'>) {
             </OTPFieldGroup>
           </OTPField>
           {error() && (
-            <div class="mt-1 text-sm text-error-foreground">{error()}</div>
+            <div class="text-error-foreground mt-1 text-sm">{error()}</div>
           )}
         </Show>
 
@@ -400,10 +386,24 @@ function OtpStep(props: StepProps<'otp'>) {
 }
 
 function PasswordStep(props: StepProps<'password'>) {
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
   const [password, setPassword] = createSignal('')
   const [error, setError] = createSignal<string | undefined>()
   const [loading, setLoading] = createSignal(false)
-  const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
+
+  onMount(() => {
+    const pasteHandler = () => {
+      if (document.activeElement !== inputRef()) {
+        inputRef()?.focus()
+      }
+    }
+
+    window.addEventListener('paste', pasteHandler)
+
+    onCleanup(() => {
+      window.removeEventListener('paste', pasteHandler)
+    })
+  })
 
   const abortController = new AbortController()
   onCleanup(() => abortController.abort())
@@ -411,6 +411,7 @@ function PasswordStep(props: StepProps<'password'>) {
   const handleSubmit = async () => {
     if (!password()) {
       setError('Password is required')
+      inputRef()?.focus()
       return
     }
 
@@ -427,49 +428,51 @@ function PasswordStep(props: StepProps<'password'>) {
       setLoading(false)
       setError(unknownToError(e).message)
     }
+
+    inputRef()?.focus()
   }
-  createEffect(() => inputRef()?.focus())
 
   return (
     <div class="flex flex-col items-center justify-center">
+      <LucideLockKeyhole class="size-16 pb-2" strokeWidth={1.5} />
       <h2 class="text-xl font-bold">
         2FA password
       </h2>
-      <div class="mt-4 text-center text-sm text-muted-foreground">
+      <div class="text-muted-foreground mt-4 text-center text-sm">
         Your account is protected with an additional password.
       </div>
-      <div class="mt-4 flex flex-col">
+      <div class="mt-4">
         <TextFieldRoot validationState={error() ? 'invalid' : 'valid'}>
           <TextFieldLabel>Password</TextFieldLabel>
-          <TextFieldFrame>
-            <TextField
-              type="password"
-              placeholder="Password"
-              autocomplete="current-password"
-              value={password()}
-              onInput={e => setPassword(e.currentTarget.value)}
-              disabled={loading()}
-              ref={setInputRef}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSubmit()
-                }
-              }}
-            />
-          </TextFieldFrame>
+          <div class="flex flex-row">
+            <TextFieldFrame>
+              <TextField
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                value={password()}
+                onInput={e => setPassword(e.currentTarget.value)}
+                disabled={loading()}
+                ref={(e) => { props.ctx.setInputRef(e); setInputRef(e) }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmit()
+                  }
+                }}
+              />
+            </TextFieldFrame>
+            <Button
+              variant="default"
+              size="icon"
+              class="ml-2 size-9 min-w-[36px]"
+              disabled={loading() || password() === ''}
+              onClick={handleSubmit}
+            >
+              <LucideChevronRight class="size-5" />
+            </Button>
+          </div>
           <TextFieldErrorMessage>{error()}</TextFieldErrorMessage>
         </TextFieldRoot>
-
-        <div class="mt-2 flex w-full justify-end">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={loading()}
-          >
-            Next
-          </Button>
-        </div>
       </div>
     </div>
   )
@@ -480,9 +483,9 @@ function DoneStep(props: StepProps<'done'>) {
     <div class="flex flex-col items-center justify-center">
       <AccountAvatar
         account={props.ctx.account}
-        class="mb-4 size-24 animate-scale-up shadow-sm fill-mode-forwards"
+        class="animate-scale-up fill-mode-forwards mb-4 size-24 shadow-sm"
       />
-      <div class="animate-fade-out-down text-center font-medium fill-mode-forwards">
+      <div class="animate-fade-out-down fill-mode-forwards text-center font-medium">
         Welcome,
         {' '}
         {props.ctx.account.name}
@@ -507,6 +510,26 @@ export function LoginForm(props: {
   }
 
   const [inputRef, setInputRef] = createSignal<HTMLInputElement | undefined>()
+
+  onMount(() => {
+    const pasteHandler = () => {
+      if (document.activeElement !== inputRef()) {
+        inputRef()?.focus()
+      }
+    }
+
+    const handleKeyDown = () => {
+      inputRef()?.focus()
+    }
+
+    window.addEventListener('paste', pasteHandler)
+    window.addEventListener('keydown', handleKeyDown)
+
+    onCleanup(() => {
+      window.removeEventListener('paste', pasteHandler)
+      window.removeEventListener('keydown', handleKeyDown)
+    })
+  })
 
   return (
     <div class={cn('flex h-full flex-col items-center justify-center gap-4', props.class)}>

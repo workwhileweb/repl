@@ -29,25 +29,10 @@ interface PhoneInputProps {
 }
 
 export function PhoneInput(props: PhoneInputProps) {
+  let inputRef: HTMLInputElement | undefined
   const [countriesList, setCountriesList] = createSignal<mtcute.RawCountry[]>([])
   const [chosenCode, setChosenCode] = createSignal<ChosenCode | undefined>()
   const [inputValue, setInputValue] = createSignal('+')
-
-  onMount(async () => {
-    const { countries, countryByIp } = await workerInvoke('telegram', 'loadCountries', { accountId: props.accountId })
-    setCountriesList(countries)
-
-    if (inputValue() === '+') {
-      // guess the country code
-      for (const country of countries) {
-        if (country.iso2 === countryByIp) {
-          setChosenCode(mapCountryCode(country, country.countryCodes[0]))
-          setInputValue(`+${country.countryCodes[0].countryCode} `)
-          break
-        }
-      }
-    }
-  })
 
   const handleInput = (e: InputEvent) => {
     const el = e.currentTarget as HTMLInputElement
@@ -155,6 +140,26 @@ export function PhoneInput(props: PhoneInputProps) {
     }
   }
 
+  onMount(async () => {
+    const { countries, countryByIp } = await workerInvoke('telegram', 'loadCountries', { accountId: props.accountId })
+    setCountriesList(countries)
+
+    if (chosenCode() === undefined) {
+      handleInput({ currentTarget: inputRef } as any)
+    }
+
+    if (inputValue() === '+') {
+      // guess the country code
+      for (const country of countries) {
+        if (country.iso2 === countryByIp) {
+          setChosenCode(mapCountryCode(country, country.countryCodes[0]))
+          setInputValue(`+${country.countryCodes[0].countryCode} `)
+          break
+        }
+      }
+    }
+  })
+
   const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && chosenCode() !== undefined) {
       props.onSubmit?.()
@@ -180,7 +185,10 @@ export function PhoneInput(props: PhoneInputProps) {
         onKeyPress={handleKeyPress}
         autocomplete="off"
         disabled={props.disabled}
-        ref={props.ref}
+        ref={(e: HTMLInputElement) => {
+          inputRef = e
+          props.ref?.(e)
+        }}
       />
     </TextFieldFrame>
   )
