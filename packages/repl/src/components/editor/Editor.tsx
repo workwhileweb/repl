@@ -15,7 +15,7 @@ const DEFAULT_CODE = `
 /**
  * This playground comes pre-loaded with all @mtcute/* libraries,
  * as well as a pre-configured Telegram client (available as \`tg\` global variable).
- * 
+ *
  * Exports from this file will become available in the REPL.
  */
 export const self = await tg.getMe()
@@ -134,6 +134,7 @@ export default function Editor(props: EditorProps) {
       // a tab was deleted
       const changed = findChangedTab(tabs, prevTabs)
       if (!changed) return
+      modelsByTab.get(changed.id)?.dispose()
       modelsByTab.delete(changed.id)
     }
   }))
