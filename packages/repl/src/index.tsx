@@ -6,6 +6,8 @@ import './app.css'
 
 const root = document.getElementById('root')
 
-// registerServiceWorker()
+if (!import.meta.env.PROD) {
+  localStorage.setItem('umami.disabled', 'true')
+}
 
 render(() => <App />, root!)
