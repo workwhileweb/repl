@@ -13,6 +13,8 @@ declare const window: typeof globalThis & {
   tg: import('@mtcute/web').TelegramClient
 }
 
+Object.defineProperty(globalThis, 'Long', { value: Long })
+
 function sendToDevtools(message: any) {
   window.parent.postMessage({ event: 'TO_DEVTOOLS', value: message }, HOST_ORIGIN)
 }

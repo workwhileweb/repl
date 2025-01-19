@@ -79,7 +79,9 @@ export async function setupMonaco() {
   })
 
   extraLibs.push({
-    content: 'declare const tg: import("@mtcute/web").TelegramClient',
+    content:
+      'declare const tg: import("@mtcute/web").TelegramClient;\n'
+      + 'declare const Long: import("@mtcute/web").Long;',
     filePath: 'file:///tg.d.ts',
   })
 
