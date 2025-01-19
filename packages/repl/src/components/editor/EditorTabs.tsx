@@ -165,7 +165,7 @@ export function EditorTabs(props: EditorTabsProps) {
       class={cn('max-w-full overflow-auto', props.class)}
       ref={root}
     >
-      <TabsList class="rounded-none border-b bg-transparent px-2">
+      <TabsList class=" rounded-none border-b bg-transparent px-2" style={{ 'align-items': 'stretch' }}>
         <For each={tabs()}>
           {renderTab}
         </For>
@@ -181,6 +181,7 @@ export function EditorTabs(props: EditorTabsProps) {
           variant="underline"
           ref={indicator}
         />
+        <div class="flex grow" onDblClick={createNewTab} />
       </TabsList>
     </Tabs>
   )
