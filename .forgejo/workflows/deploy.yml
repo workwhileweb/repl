@@ -1,0 +1,43 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: node22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - name: Setup
+        run: |
+          echo "VITE_API_ID=${{ secrets.API_ID }}" >> .env
+          echo "VITE_API_HASH=${{ secrets.API_HASH }}" >> .env
+          echo "VITE_IFRAME_URL=https://mtcute-repl-iframe.pages.dev" >> .env
+          echo "VITE_HOST_ORIGIN=https://play.mtcute.dev" >> .env
+
+          echo "ignore-workspace-root-check=true" >> .npmrc
+
+          pnpm install
+      - name: Build
+        run: |
+          pnpm run build:vendor
+          pnpm run build
+      - name: Deploy (mtcute-repl)
+        uses: https://github.com/cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/repl/dist --project-name=mtcute-repl
+      - name: Deploy (mtcute-repl-iframe)
+        uses: https://github.com/cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/worker/dist --project-name=mtcute-repl-iframe

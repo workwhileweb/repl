@@ -6,7 +6,7 @@ import { clearCache, forgetScript, handleRuntimeRequest, uploadScript } from './
 
 declare const self: ServiceWorkerGlobalScope
 
-async function handleSwRequest(req: Request, url: URL): Promise<Response> {
+async function handleSwRequest(_req: Request, url: URL): Promise<Response> {
   if (url.pathname.startsWith('/sw/avatar/')) {
     const accountId = url.pathname.split('/')[3]
     return handleAvatarRequest(accountId)

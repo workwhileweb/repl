@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.5.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,7 +15,7 @@
     "@fuman/io": "0.0.8",
     "@fuman/utils": "0.0.4",
     "@kobalte/core": "^0.13.7",
-    "@mtcute/convert": "^0.19.4",
+    "@mtcute/convert": "^0.19.8",
     "@mtcute/web": "^0.19.5",
     "@nanostores/persistent": "^0.10.2",
     "class-variance-authority": "^0.7.1",

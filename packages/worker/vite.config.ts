@@ -17,6 +17,11 @@ export default defineConfig((env): UserConfig => {
     optimizeDeps: {
       exclude: ['@mtcute/wasm'],
     },
+    build: {
+      rollupOptions: {
+        external: ['node:fs/promises', 'node:crypto'],
+      },
+    },
     plugins: [
       externalizeDeps({
         externals: [],

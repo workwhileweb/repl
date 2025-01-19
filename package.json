@@ -5,7 +5,9 @@
   "private": true,
   "packageManager": "pnpm@9.5.0",
   "scripts": {
-    "dev": "pnpm -r --parallel dev"
+    "dev": "pnpm -r --parallel dev",
+    "build": "tsc -b && pnpm -r build",
+    "build:vendor": "cd vendor && bash build-patched-chobitsu.sh"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.13.0",

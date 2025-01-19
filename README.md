@@ -4,10 +4,7 @@
 
 ```bash
 pnpm i
-
-cd vendor
-bash build-patched-chobitsu.sh
-cd ..
+pnpm build:vendor
 
 cp .env.example .env
 # fill the values
