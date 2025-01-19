@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm run build:iframe-script && vite build",
+    "build:iframe-script": "tsx scripts/build-iframe-script.ts",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -25,5 +26,8 @@
     "nanoid": "^5.0.9",
     "nanostores": "^0.11.3",
     "uqr": "^0.1.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7"
   }
 }

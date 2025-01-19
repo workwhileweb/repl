@@ -1,6 +1,9 @@
 // eslint-disable-next-line antfu/no-import-dist
 import chobitsuUrl from '../../../../../vendor/chobitsu/dist/chobitsu.js?url'
-import runnerScriptUrl from './script.ts?url'
+
+const runnerScriptUrl = import.meta.env.DEV
+  ? new URL('./script.ts', import.meta.url).href
+  : new URL('./script-bundled.js', import.meta.url).href
 
 export async function generateImportMap(packageJsons: any[]) {
   const importMap: Record<string, string> = {}

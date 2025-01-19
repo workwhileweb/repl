@@ -1,4 +1,4 @@
-import { TelegramClient } from '@mtcute/web?external'
+import { Long, TelegramClient } from '@mtcute/web'
 
 type ConnectionState = import('@mtcute/web').ConnectionState
 type TelegramClientOptions = import('@mtcute/web').TelegramClientOptions

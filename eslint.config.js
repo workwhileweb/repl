@@ -12,7 +12,8 @@ for (const [key, value] of Object.entries(tailwindConfig)) {
 
 export default antfu({
   ignores: [
-    'src/components/Editor/utils/*.json',
+    'packages/repl/components/Editor/utils/*.json',
+    'packages/worker/src/sw/iframe/script-bundled.js',
     'vendor',
   ],
   typescript: true,

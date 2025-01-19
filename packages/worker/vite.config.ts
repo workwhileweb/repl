@@ -1,8 +1,6 @@
 import type { UserConfig } from 'vite'
 import { join } from 'node:path'
 import { defineConfig, loadEnv } from 'vite'
-// eslint-disable-next-line import/no-relative-packages
-import externalizeDeps from '../../scripts/vite-plugin-externalize-dependencies.ts'
 
 export default defineConfig((env): UserConfig => {
   process.env = {
@@ -18,14 +16,11 @@ export default defineConfig((env): UserConfig => {
       exclude: ['@mtcute/wasm'],
     },
     build: {
+      emptyOutDir: true,
+      assetsDir: '',
       rollupOptions: {
         external: ['node:fs/promises', 'node:crypto'],
       },
     },
-    plugins: [
-      externalizeDeps({
-        externals: [],
-      }),
-    ],
   }
 })
