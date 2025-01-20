@@ -36,17 +36,35 @@ index 1dd6e97..0ea8300 100644
    runIfWaitingForDebugger: noop,
  })
 diff --git a/src/lib/evaluate.ts b/src/lib/evaluate.ts
-index 0732a13..f0abcce 100644
+index 0732a13..b8f41ae 100644
 --- a/src/lib/evaluate.ts
 +++ b/src/lib/evaluate.ts
-@@ -44,14 +44,14 @@ export function setGlobal(name: string, val: any) {
+@@ -44,15 +44,34 @@ export function setGlobal(name: string, val: any) {
    global[name] = val
  }
  
 -export default function evaluate(expression: string) {
++const createdInEvalIdents: Set<string> = new Set()
 +export default async function evaluate(expression: string) {
    let ret
  
++  // try to find variables that are declared in the expression
++  const vars = expression.match(/(?:;|^|\s)(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=/g) ?? []
++  let varsInjectScript = ''
++  for (const var_ of vars) {
++    const name = var_.split(' ')[1].split('=')[0]
++    if (name in window && !createdInEvalIdents.has(name)) {
++      // avoid overriding existing globals
++      continue
++    }
++
++    createdInEvalIdents.add(name)
++    // todo: we should probably also handle multiple declarations but who even uses that?
++    varsInjectScript += `try{window[${JSON.stringify(name)}]=${name}}catch{};`
++  }
++  if (varsInjectScript) {
++    expression += ';' + varsInjectScript
++  }
    injectGlobal()
    try {
 -    ret = eval.call(window, `(${expression})`)
@@ -55,8 +73,10 @@ index 0732a13..f0abcce 100644
 -    ret = eval.call(window, expression)
 +    ret = await eval.call(window, `(async () => {${expression}})()`)
    }
++
    clearGlobal()
  
+   return ret
 diff --git a/src/lib/objManager.ts b/src/lib/objManager.ts
 index ff6a9e3..d79cdd6 100644
 --- a/src/lib/objManager.ts
