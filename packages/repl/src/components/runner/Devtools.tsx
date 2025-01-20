@@ -1,3 +1,4 @@
+import { useColorMode } from '@kobalte/core'
 import { createEffect, createSignal, onCleanup } from 'solid-js'
 import { cn } from '../../lib/utils.ts'
 
@@ -10,6 +11,11 @@ const HTML = `
   <script src="https://unpkg.com/@ungap/custom-elements/es.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/chii@1.12.3/public/front_end/entrypoints/chii_app/chii_app.js"></script>
   <body class="undocked" id="-blink-dev-tools">
+  <script>
+    if (window.location.hash.includes('dark=true')) {
+      document.documentElement.style.colorScheme = 'dark'
+    }
+  </script>
   <style id="inject-css">
     :root {
       --sys-color-base-container: hsl(0 0% 100%);
@@ -88,6 +94,8 @@ export function Devtools(props: {
 }) {
   const [innerRef, setInnerRef] = createSignal<HTMLIFrameElement | undefined>()
 
+  const { colorMode } = useColorMode()
+
   const url = URL.createObjectURL(new Blob([HTML], { type: 'text/html' }))
   onCleanup(() => URL.revokeObjectURL(url))
 
@@ -110,7 +118,7 @@ export function Devtools(props: {
     <div class={cn('relative', props.class)}>
       <iframe
         ref={setInnerRef}
-        src={`${url}#?embedded=${encodeURIComponent(location.origin)}`}
+        src={`${url}#?embedded=${encodeURIComponent(location.origin)}&dark=${colorMode() === 'dark'}`}
         title="Devtools"
         class="absolute inset-0 block size-full"
         onLoad={handleLoad}

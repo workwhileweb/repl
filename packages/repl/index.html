@@ -8,6 +8,12 @@
     <script defer src="https://zond.tei.su/script.js" data-website-id="e1726072-b61b-49ab-a4ee-decb8e6740be"></script>
   </head>
   <body>
+    <script>
+      const theme = localStorage.getItem('kb-color-mode')
+      if (theme === 'dark' || ((!theme || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.style.colorScheme = 'dark'
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>
