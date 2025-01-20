@@ -19,16 +19,34 @@ const HTML = `
   <style id="inject-css">
     :root {
       --sys-color-base-container: hsl(0 0% 100%);
+      --sys-color-cdt-base: hsl(0 0% 100%);
       --sys-color-on-base-divider: hsl(240 5.9% 90%);
       --sys-color-divider: hsl(240 5.9% 90%);
       --sys-color-neutral-outline: hsl(240 5.9% 90%);
     }
     .-theme-with-dark-background {
       --sys-color-base-container: hsl(240 10% 3.9%);
+      --sys-color-cdt-base: hsl(240 10% 3.9%);
       --sys-color-on-base-divider: hsl(240 3.7% 15.9%);
       --sys-color-divider: hsl(240 3.7% 15.9%);
       --sys-color-neutral-outline: hsl(240 3.7% 15.9%);
+      --sys-color-on-surface-subtle: hsl(0 0 98%);
       --sys-color-state-hover-on-subtle: hsl(0 0% 98% / 0.08);
+    }
+  </style>
+  <style id="inject-css-tab-pane">
+    .tabbed-pane-header-tab {
+      border-bottom: 2px solid transparent;
+      border-left: 0;
+      border-right: 0;
+      display: flex;
+      justify-content: center;
+    }
+    .tabbed-pane-header-tab.selected {
+      color: var(--sys-color-on-surface-subtle);
+      border-bottom: 2px solid var(--sys-color-on-surface-subtle);
+      border-left: 0;
+      border-right: 0;
     }
   </style>
 `
@@ -46,9 +64,16 @@ async function waitForElement(selector, container, waitForShadowRoot = false) {
 }
 
 function hideBySelector(root, selector) {
-  const el = root.shadowRoot.querySelector(selector);
+  const el = root.querySelector(selector);
   if (!el) return;
   el.style.display = 'none';
+}
+  
+function hideBySelectorAll(root, selector) {
+  const els = root.querySelectorAll(selector);
+  for (const el of els) {
+    el.style.display = 'none';
+  }
 }
 
 async function focusConsole(tabbedPane) {
@@ -60,16 +85,21 @@ async function focusConsole(tabbedPane) {
 }
 
 (async () => {
+  localStorage.setItem('disableSelfXssWarning', 'true')
+
   const tabbedPane = await waitForElement('.tabbed-pane', document.body);
   await focusConsole(tabbedPane);
-  hideBySelector(tabbedPane, '.tabbed-pane-header');
+
+  await waitForElement('.tabbed-pane-right-toolbar', tabbedPane.shadowRoot);
+  hideBySelectorAll(tabbedPane.shadowRoot, '.tabbed-pane-left-toolbar, .tabbed-pane-right-toolbar, .tabbed-pane-tab-slider');
+  hideBySelectorAll(tabbedPane.shadowRoot, '.tabbed-pane-header-tab:not(#tab-console, #tab-sources)');
+  tabbedPane.shadowRoot.appendChild(document.querySelector('#inject-css-tab-pane'));
 
   const consoleToolbar = await waitForElement('.console-main-toolbar', document.body);
-  hideBySelector(consoleToolbar, 'devtools-issue-counter');
+  hideBySelector(consoleToolbar.shadowRoot, 'devtools-issue-counter');
 
-  const injectCss = await waitForElement('#inject-css', document.body);
   const rootView = await waitForElement('.root-view', document.body);
-  rootView.appendChild(injectCss);
+  rootView.appendChild(document.querySelector('#inject-css'));
 
   // forward some keyboard shortcuts to the parent window
   document.addEventListener('keydown', (e) => {
@@ -109,6 +139,7 @@ export function Devtools(props: {
   function handleLoad() {
     const _innerRef = innerRef()
     if (!_innerRef) return
+
     const script = document.createElement('script')
     script.textContent = INJECTED_SCRIPT
     _innerRef.contentWindow?.document.body.appendChild(script)
