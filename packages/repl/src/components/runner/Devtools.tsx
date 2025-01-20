@@ -48,6 +48,12 @@ const HTML = `
       border-left: 0;
       border-right: 0;
     }
+      .tabbed-pane-left-toolbar,
+      .tabbed-pane-right-toolbar,
+      .tabbed-pane-tab-slider,
+      .tabbed-pane-header-tab:not(#tab-console, #tab-sources) {
+        display: none;
+      }
   </style>
 `
 
@@ -89,10 +95,6 @@ async function focusConsole(tabbedPane) {
 
   const tabbedPane = await waitForElement('.tabbed-pane', document.body);
   await focusConsole(tabbedPane);
-
-  await waitForElement('.tabbed-pane-right-toolbar', tabbedPane.shadowRoot);
-  hideBySelectorAll(tabbedPane.shadowRoot, '.tabbed-pane-left-toolbar, .tabbed-pane-right-toolbar, .tabbed-pane-tab-slider');
-  hideBySelectorAll(tabbedPane.shadowRoot, '.tabbed-pane-header-tab:not(#tab-console, #tab-sources)');
   tabbedPane.shadowRoot.appendChild(document.querySelector('#inject-css-tab-pane'));
 
   const consoleToolbar = await waitForElement('.console-main-toolbar', document.body);

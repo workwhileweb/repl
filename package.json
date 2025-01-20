@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "tsc -b && pnpm -r build",
-    "build:vendor": "cd vendor && bash build-patched-chobitsu.sh"
+    "build:vendor": "cd vendor && bash build-patched-chobitsu.sh",
+    "preview": "pnpm run -r --parallel preview"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.13.0",

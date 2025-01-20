@@ -9,10 +9,6 @@ if (!window.parent || window.parent === window) {
   throw new Error('Not in iframe')
 }
 
-if (new URL(document.referrer).origin !== import.meta.env.VITE_HOST_ORIGIN) {
-  throw new Error(`Invalid origin: this page must be loaded in an iframe from ${import.meta.env.VITE_HOST_ORIGIN}`)
-}
-
 const worker = new ReplWorker()
 
 registerWorker(worker)

@@ -12,6 +12,9 @@ export default defineConfig((env): UserConfig => {
     server: {
       port: 3001,
     },
+    preview: {
+      port: 3001,
+    },
     optimizeDeps: {
       exclude: ['@mtcute/wasm'],
     },

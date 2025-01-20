@@ -13,6 +13,9 @@ export default defineConfig((env): UserConfig => {
     optimizeDeps: {
       exclude: ['@mtcute/wasm'],
     },
+    preview: {
+      port: 3000,
+    },
     build: {
       rollupOptions: {
         external: ['node:fs/promises', 'node:crypto'],
