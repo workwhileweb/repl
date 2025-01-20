@@ -52,6 +52,7 @@ const compilerOptions: languages.typescript.CompilerOptions = {
   jsx: languages.typescript.JsxEmit.Preserve,
   allowNonTsExtensions: true,
   allowImportingTsExtensions: true,
+  noErrorTruncation: true,
 }
 
 languages.typescript.typescriptDefaults.setCompilerOptions(compilerOptions)
