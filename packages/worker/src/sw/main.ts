@@ -2,6 +2,7 @@ import { unknownToError } from '@fuman/utils'
 import { IS_SAFARI } from '../utils/env.ts'
 import { clearAvatarCache, handleAvatarRequest } from './avatar.ts'
 import { requestCache } from './cache.ts'
+import { type DownloadFileParams, handleDownload, handlePort } from './download/handler.ts'
 import { clearCache, handleRuntimeRequest } from './runtime.ts'
 import { forgetAllScripts, forgetScript, uploadScript } from './scripts.ts'
 
@@ -15,6 +16,11 @@ async function handleSwRequest(_req: Request, url: URL): Promise<Response> {
 
   if (url.pathname.startsWith('/sw/runtime/')) {
     return handleRuntimeRequest(url)
+  }
+
+  if (url.pathname.startsWith('/sw/download/')) {
+    const id = url.pathname.split('/')[3]
+    return handleDownload(id)
   }
 
   return new Response('Not Found', { status: 404 })
@@ -58,6 +64,7 @@ export type SwMessage =
   | { event: 'FORGET_SCRIPT', name: string }
   | { event: 'CLEAR_AVATAR_CACHE', accountId: string }
   | { event: 'CLEAR_CACHE' }
+  | { event: 'DOWNLOAD_FILE', id: string, params: DownloadFileParams, port: MessagePort }
 
 async function handleMessage(msg: SwMessage) {
   switch (msg.event) {
@@ -83,6 +90,10 @@ async function handleMessage(msg: SwMessage) {
 
 self.onmessage = async (event) => {
   const msg = event.data as SwMessage & { id: number }
+  if (msg.event === 'DOWNLOAD_FILE') {
+    return handlePort(msg.port, msg.id, msg.params)
+  }
+
   try {
     const result = await handleMessage(msg)
     event.source!.postMessage({ id: msg.id, result })

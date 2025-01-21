@@ -1,7 +1,8 @@
 import { asNonNull } from '@fuman/utils'
-import { Long, TelegramClient } from '@mtcute/web'
+import { FileLocation, Long, TelegramClient } from '@mtcute/web'
 import { nanoid } from 'nanoid'
 import { swInvokeMethodInner } from '../client-inner.ts'
+import { createFileDownload } from '../download/client.ts'
 
 type ConnectionState = import('@mtcute/web').ConnectionState
 type TelegramClientOptions = import('@mtcute/web').TelegramClientOptions
@@ -72,6 +73,37 @@ function initClient(accountId: string, verbose: boolean) {
     // eslint-disable-next-line no-console
     console.log('%c[UPDATE]%c %s: %o', 'color: #8d7041', 'color: unset', update.name, update.data)
   })
+
+  window.tg.downloadToFile = async (filename, input, params) => {
+    // todo: there should probably be a better way than this
+    let fileSize = params?.fileSize
+    if (!fileSize) {
+      if (input instanceof FileLocation) {
+        let locationInner = input.location
+
+        if (typeof locationInner === 'function') {
+          locationInner = locationInner()
+        }
+
+        if (ArrayBuffer.isView(locationInner)) {
+          fileSize = locationInner.byteLength
+        } else {
+          fileSize = input.fileSize
+        }
+      }
+    }
+
+    const abortController = new AbortController()
+    const writable = createFileDownload(
+      {
+        filename,
+        size: fileSize,
+      },
+      reason => abortController.abort(reason),
+    )
+
+    await window.tg.downloadAsStream(input, params).pipeTo(writable)
+  }
 }
 
 window.addEventListener('message', async ({ data }) => {
