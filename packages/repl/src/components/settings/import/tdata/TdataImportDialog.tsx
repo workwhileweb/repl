@@ -1,3 +1,4 @@
+import type { Tdata } from '@mtcute/convert'
 import { hex } from '@fuman/utils'
 import { workerInvoke } from 'mtcute-repl-worker/client'
 import { createEffect, createSignal, For, on, Show } from 'solid-js'
@@ -6,8 +7,6 @@ import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../../lib/compon
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../../lib/components/ui/dialog.tsx'
 import { Spinner } from '../../../../lib/components/ui/spinner.tsx'
 import { $accounts } from '../../../../store/accounts.ts'
-
-export const TDATA_IMPORT_AVAILABLE = 'showDirectoryPicker' in window
 
 interface TdataAccount {
   telegramId: number
@@ -74,30 +73,70 @@ export function TdataImportDialog(props: {
       return
     }
 
-    if (!('showDirectoryPicker' in window)) {
-      return props.onClose()
-    }
+    setReading(true)
 
     ;(async () => {
-      setReading(true)
-      const handle = await (window as any).showDirectoryPicker({
-        id: 'mtcute-repl-tdata-import',
-        mode: 'read',
-        startIn: 'documents',
-      }).catch((e: any) => {
-        if (!(e instanceof DOMException && e.name === 'AbortError')) {
-          throw e
-        }
-      })
-      if (!handle) return props.onClose()
+      let tdata: Tdata | undefined
+      const importPromise = import('./tdata-web.ts')
+      if ('showDirectoryPicker' in window) {
+        // use the native fs api
 
-      const { Tdata, WebFsInterface, WebExtCryptoProvider } = await import('./tdata-web.ts')
-      const tdata = await Tdata.open({
-        path: '',
-        fs: new WebFsInterface(handle),
-        crypto: new WebExtCryptoProvider(),
-        ignoreVersion: true,
-      })
+        const handle = await (window as any).showDirectoryPicker({
+          id: 'mtcute-repl-tdata-import',
+          mode: 'read',
+          startIn: 'documents',
+        }).catch((e: any) => {
+          if (!(e instanceof DOMException && e.name === 'AbortError')) {
+            throw e
+          }
+        })
+        if (!handle) return props.onClose()
+
+        const { Tdata, WebFsInterface, WebExtCryptoProvider } = await importPromise
+        tdata = await Tdata.open({
+          path: '',
+          fs: new WebFsInterface(handle),
+          crypto: new WebExtCryptoProvider(),
+          ignoreVersion: true,
+        })
+      } else {
+        // use non-standard but widely supported webkitdirectory api
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.webkitdirectory = true
+        input.multiple = true
+
+        input.style.position = 'fixed'
+        input.style.top = '-100000px'
+        input.style.left = '-100000px'
+        document.body.appendChild(input)
+
+        const files = await new Promise<File[] | null>((resolve) => {
+          input.addEventListener('change', () => {
+            const files = Array.from(input.files ?? [])
+            input.remove()
+            resolve(files)
+          })
+          input.addEventListener('cancel', () => {
+            input.remove()
+            resolve(null)
+          })
+          input.click()
+        })
+
+        if (!files) return props.onClose()
+
+        const rootName = files[0].webkitRelativePath.split('/')[0]
+
+        const { Tdata, WebkitFsInterface, WebExtCryptoProvider } = await importPromise
+
+        tdata = await Tdata.open({
+          path: rootName,
+          fs: new WebkitFsInterface(files),
+          crypto: new WebExtCryptoProvider(),
+          ignoreVersion: true,
+        })
+      }
 
       const keyData = await tdata.readKeyData()
       const accounts: TdataAccount[] = []
@@ -116,10 +155,10 @@ export function TdataImportDialog(props: {
       setReading(false)
     })().catch((e) => {
       setReading(false)
+      console.error(e)
       if (e instanceof Error) {
         setError(e.message)
       } else {
-        console.error(e)
         setError('Unknown error')
       }
     })
@@ -186,7 +225,7 @@ export function TdataImportDialog(props: {
               )}
             </For>
             {error() && (
-              <div class="text-sm text-error-foreground">
+              <div class="mt-2 text-sm text-error-foreground">
                 {error()}
               </div>
             )}

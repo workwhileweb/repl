@@ -7,6 +7,35 @@ import md5 from 'md5'
 
 export { Tdata } from '@mtcute/convert'
 
+export class WebkitFsInterface implements INodeFsLike {
+  constructor(readonly files: File[]) {}
+
+  async readFile(path: string): Promise<Uint8Array> {
+    path = path.replace(/^\//, '')
+    const file = this.files.find(f => f.webkitRelativePath === path)
+    if (!file) throw new Error('File not found')
+    return new Uint8Array(await file.arrayBuffer())
+  }
+
+  async writeFile(): Promise<void> {
+    throw new Error('Not implemented')
+  }
+
+  async mkdir(): Promise<void> {
+    throw new Error('Not implemented')
+  }
+
+  async stat(path: string): Promise<{ size: number, lastModified: number }> {
+    path = path.replace(/^\//, '')
+    const file = this.files.find(f => f.webkitRelativePath === path)
+    if (!file) throw new Error('File not found')
+    return {
+      size: file.size,
+      lastModified: file.lastModified,
+    }
+  }
+}
+
 export class WebFsInterface implements INodeFsLike {
   constructor(readonly root: FileSystemDirectoryHandle) {}
 

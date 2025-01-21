@@ -12,12 +12,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '../../../lib/components/ui/dropdown-menu.tsx'
-import { WithTooltip } from '../../../lib/components/ui/tooltip.tsx'
-import { cn } from '../../../lib/utils.ts'
 import { AuthKeyImportDialog } from './AuthKeyImportDialog.tsx'
 import { BotTokenImportDialog } from './BotTokenImportDialog.tsx'
 import { StringSessionDefs, StringSessionImportDialog } from './StringSessionImportDialog.tsx'
-import { TDATA_IMPORT_AVAILABLE, TdataImportDialog } from './tdata/TdataImportDialog.tsx'
+import { TdataImportDialog } from './tdata/TdataImportDialog.tsx'
 
 export function ImportDropdown(props: { size: 'xs' | 'sm' }) {
   const [showImportStringSession, setShowImportStringSession] = createSignal(false)
@@ -76,27 +74,14 @@ export function ImportDropdown(props: { size: 'xs' | 'sm' }) {
               </For>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
-          <WithTooltip
-            enabled={!TDATA_IMPORT_AVAILABLE}
-            content={(
-              <>
-                Importing tdata is not supported in your browser.
-                <br />
-                Try using a Chromium-based browser instead.
-              </>
-            )}
+          <DropdownMenuItem
+            class="py-1 text-xs"
+            onClick={() => setShowImportTdata(true)}
+            {...props}
           >
-            {(props: DropdownMenuTriggerProps) => (
-              <DropdownMenuItem
-                class={cn('py-1 text-xs', !TDATA_IMPORT_AVAILABLE && 'opacity-50')}
-                onClick={() => setShowImportTdata(true)}
-                {...props}
-              >
-                <LucideLaptop class="mr-2 size-3.5 stroke-[1.5px]" />
-                Desktop (tdata)
-              </DropdownMenuItem>
-            )}
-          </WithTooltip>
+            <LucideLaptop class="mr-2 size-3.5 stroke-[1.5px]" />
+            Desktop (tdata)
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
