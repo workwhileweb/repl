@@ -1,5 +1,5 @@
 diff --git a/src/domains/Runtime.ts b/src/domains/Runtime.ts
-index b980929..67388f9 100644
+index b980929..3a94490 100644
 --- a/src/domains/Runtime.ts
 +++ b/src/domains/Runtime.ts
 @@ -64,9 +64,9 @@ export function getProperties(
@@ -23,6 +23,32 @@ index b980929..67388f9 100644
      setGlobal('$_', result)
      ret.result = objManager.wrap(result, {
        generatePreview: true,
+@@ -104,6 +104,7 @@ export function globalLexicalScopeNames() {
+ 
+ declare const console: any
+ 
++let counter = 0
+ function monitorConsole() {
+   const methods: any = {
+     log: 'log',
+@@ -133,6 +134,8 @@ function monitorConsole() {
+         })
+       )
+ 
++      counter += 0.001
++      if (counter > 10) { counter = 0 }
+       trigger('Runtime.consoleAPICalled', {
+         type,
+         args,
+@@ -141,7 +144,7 @@ function monitorConsole() {
+             type === 'error' || type === 'warning' ? getCallFrames() : [],
+         },
+         executionContextId: executionContext.id,
+-        timestamp: now(),
++        timestamp: now() + counter,
+       })
+     }
+   })
 diff --git a/src/index.ts b/src/index.ts
 index 1dd6e97..0ea8300 100644
 --- a/src/index.ts
