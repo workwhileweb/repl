@@ -1,4 +1,7 @@
+import { asNonNull } from '@fuman/utils'
 import { Long, TelegramClient } from '@mtcute/web'
+import { nanoid } from 'nanoid'
+import { swInvokeMethodInner } from '../client-inner.ts'
 
 type ConnectionState = import('@mtcute/web').ConnectionState
 type TelegramClientOptions = import('@mtcute/web').TelegramClientOptions
@@ -31,6 +34,7 @@ chobitsu.setOnMessage((message: string) => {
 
 let lastAccountId: string | undefined
 let lastConnectionState: ConnectionState | undefined
+let currentScriptId: string | undefined
 let logUpdates = false
 let verboseLogs = false
 
@@ -70,7 +74,7 @@ function initClient(accountId: string, verbose: boolean) {
   })
 }
 
-window.addEventListener('message', ({ data }) => {
+window.addEventListener('message', async ({ data }) => {
   if (data.event === 'INIT') {
     sendToDevtools({
       method: 'Page.frameNavigated',
@@ -102,9 +106,12 @@ window.addEventListener('message', ({ data }) => {
       window.parent.postMessage({ event: 'PING' }, HOST_ORIGIN)
     }, 500)
   } else if (data.event === 'RUN') {
+    currentScriptId = nanoid()
+    await swInvokeMethodInner({ event: 'UPLOAD_SCRIPT', name: currentScriptId, files: data.files }, asNonNull(navigator.serviceWorker.controller))
+
     const el = document.createElement('script')
     el.type = 'module'
-    let script = `import * as result from "/sw/runtime/script/${data.scriptId}/main.js";`
+    let script = `import * as result from "/sw/runtime/script/${currentScriptId}/main.js";`
     for (const exportName of data.exports ?? []) {
       script += `window.${exportName} = result.${exportName};`
     }
@@ -114,9 +121,11 @@ window.addEventListener('message', ({ data }) => {
       script += 'console.log("[mtcute-repl] Script ended");'
     }
     script += 'window.__handleScriptEnd();'
+
     el.textContent = script
     el.addEventListener('error', e => window.__handleScriptEnd(e.error))
     window.__currentScript = el
+
     document.body.appendChild(el)
   } else if (data.event === 'FROM_DEVTOOLS') {
     chobitsu.sendRawMessage(data.value)
@@ -152,6 +161,10 @@ window.addEventListener('message', ({ data }) => {
 
 window.__handleScriptEnd = (error) => {
   if (!window.__currentScript) return
+  if (currentScriptId) {
+    swInvokeMethodInner({ event: 'FORGET_SCRIPT', name: currentScriptId }, asNonNull(navigator.serviceWorker.controller))
+      .catch(console.error)
+  }
   window.parent.postMessage({ event: 'SCRIPT_END', error }, HOST_ORIGIN)
   window.__currentScript.remove()
   window.__currentScript = undefined

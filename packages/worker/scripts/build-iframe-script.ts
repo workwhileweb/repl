@@ -19,6 +19,8 @@ await build({
   format: 'esm',
   outfile: 'src/sw/iframe/script-bundled.js',
   define: defines,
-  external: ['@mtcute/web'],
+  external: [
+    '@mtcute/web',
+  ],
   minify: true,
 })

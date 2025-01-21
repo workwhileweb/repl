@@ -1,15 +1,23 @@
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
+import type { mtcute } from 'mtcute-repl-worker/client'
 import type { CustomTypeScriptWorker } from '../editor/utils/custom-worker.ts'
 import { timers } from '@fuman/utils'
 import { persistentAtom } from '@nanostores/persistent'
 import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideUnplug } from 'lucide-solid'
 import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api.js'
-import { type mtcute, workerInvoke } from 'mtcute-repl-worker/client'
-import { nanoid } from 'nanoid'
 import { createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { Button } from '../../lib/components/ui/button.tsx'
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuGroupLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../../lib/components/ui/dropdown-menu.tsx'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../lib/components/ui/dropdown-menu.tsx'
 import { cn } from '../../lib/utils.ts'
 import { $activeAccountId } from '../../store/accounts.ts'
 import { $tabs } from '../../store/tabs.ts'
@@ -41,7 +49,6 @@ export function Runner(props: { isResizing: boolean }) {
   const enableUpdates = useStore($enableUpdates)
   const enableVerbose = useStore($enableVerbose)
 
-  let currentScriptId: string | undefined
   let deadTimer: timers.Timer | undefined
   let inactivityTimer: timers.Timer | undefined
   let iframeContainerRef!: HTMLIFrameElement
@@ -102,8 +109,6 @@ export function Runner(props: { isResizing: boolean }) {
         }
         case 'SCRIPT_END': {
           setRunning(false)
-          workerInvoke('sw', 'forgetScript', { name: currentScriptId! })
-          currentScriptId = undefined
           rescheduleInactivityTimer()
           break
         }
@@ -180,12 +185,9 @@ export function Runner(props: { isResizing: boolean }) {
       }
     }
 
-    currentScriptId = nanoid()
-    await workerInvoke('sw', 'uploadScript', { name: currentScriptId, files })
-
     runnerIframe()!.contentWindow!.postMessage({
       event: 'RUN',
-      scriptId: currentScriptId,
+      files,
       exports,
     }, '*')
     setRunning(true)
@@ -328,7 +330,7 @@ export function Runner(props: { isResizing: boolean }) {
           </DropdownMenu>
         </div>
       </div>
-      <div class="bg-border h-px shrink-0" />
+      <div class="h-px shrink-0 bg-border" />
       <Devtools
         class={cn('size-full grow-0', props.isResizing && 'pointer-events-none')}
         iframeRef={setDevtoolsIframe}

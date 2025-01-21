@@ -59,19 +59,19 @@ export type SwMessage =
   | { event: 'CLEAR_AVATAR_CACHE', accountId: string }
   | { event: 'CLEAR_CACHE' }
 
-function handleMessage(msg: SwMessage) {
+async function handleMessage(msg: SwMessage) {
   switch (msg.event) {
     case 'UPLOAD_SCRIPT': {
-      uploadScript(msg.name, msg.files)
+      await uploadScript(msg.name, msg.files)
       break
     }
     case 'FORGET_SCRIPT': {
-      forgetScript(msg.name)
+      await forgetScript(msg.name)
       break
     }
     case 'CLEAR_CACHE': {
       clearCache()
-      forgetAllScripts()
+      await forgetAllScripts()
       break
     }
     case 'CLEAR_AVATAR_CACHE': {
