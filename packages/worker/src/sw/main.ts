@@ -2,7 +2,8 @@ import { unknownToError } from '@fuman/utils'
 import { IS_SAFARI } from '../utils/env.ts'
 import { clearAvatarCache, handleAvatarRequest } from './avatar.ts'
 import { requestCache } from './cache.ts'
-import { clearCache, forgetScript, handleRuntimeRequest, uploadScript } from './runtime.ts'
+import { clearCache, handleRuntimeRequest } from './runtime.ts'
+import { forgetAllScripts, forgetScript, uploadScript } from './scripts.ts'
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -70,6 +71,7 @@ function handleMessage(msg: SwMessage) {
     }
     case 'CLEAR_CACHE': {
       clearCache()
+      forgetAllScripts()
       break
     }
     case 'CLEAR_AVATAR_CACHE': {

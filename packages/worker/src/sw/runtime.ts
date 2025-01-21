@@ -1,12 +1,11 @@
 import { utf8 } from '@fuman/utils'
 import { VfsStorage } from '../vfs/storage.ts'
 import { generateImportMap, generateRunnerHtml } from './iframe/html.ts'
+import { getScriptFile } from './scripts.ts'
 
 const libraryCache = new Map<string, Map<string, Uint8Array>>()
 let importMapCache: Record<string, string> | undefined
 let vfs: VfsStorage | undefined
-
-const scriptsStorage = new Map<string, string>()
 
 async function getVfs() {
   if (!vfs) {
@@ -32,24 +31,8 @@ async function loadLibrary(name: string) {
   return map
 }
 
-export function uploadScript(name: string, files: Record<string, string>) {
-  for (const [fileName, contents] of Object.entries(files)) {
-    scriptsStorage.set(`${name}/${fileName}`, contents)
-  }
-}
-
-export function forgetScript(name: string) {
-  const folder = `${name}/`
-  for (const path of scriptsStorage.keys()) {
-    if (path.startsWith(folder)) {
-      scriptsStorage.delete(path)
-    }
-  }
-}
-
 export function clearCache() {
   libraryCache.clear()
-  scriptsStorage.clear()
   importMapCache = undefined
   vfs = undefined
 }
@@ -80,12 +63,17 @@ export async function handleRuntimeRequest(url: URL) {
   }
 
   if (path.startsWith('script/')) {
-    const scriptId = path.slice('script/'.length)
-    if (!scriptsStorage.has(scriptId)) {
+    const scriptIdWithPath = path.slice('script/'.length)
+    const idx = scriptIdWithPath.indexOf('/')
+    const scriptId = scriptIdWithPath.slice(0, idx)
+    const fileName = scriptIdWithPath.slice(idx + 1)
+
+    const file = await getScriptFile(scriptId, fileName)
+    if (!file) {
       return new Response('Not found', { status: 404 })
     }
 
-    return new Response(scriptsStorage.get(scriptId)!, {
+    return new Response(file, {
       headers: {
         'Content-Type': 'application/javascript',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
