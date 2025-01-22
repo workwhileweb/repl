@@ -22,7 +22,7 @@ export function TdataImportDialog(props: {
 }) {
   const [reading, setReading] = createSignal(true)
   const [accounts, setAccounts] = createSignal<TdataAccount[]>([])
-  const [error, setError] = createSignal<string | undefined>('I like penis')
+  const [error, setError] = createSignal<string | undefined>('')
   const [loading, setLoading] = createSignal(false)
 
   const accountExists = (id: number) => $accounts.get().some(it => it.telegramId === id)
