@@ -1,6 +1,6 @@
 import type { BaseTelegramClient, SentCode, User } from '@mtcute/web'
 import type { StringSessionData } from '@mtcute/web/utils.js'
-import type { TelegramAccount } from '../store/accounts.ts'
+import type { CustomApiFields, TelegramAccount } from '../store/accounts.ts'
 import { assert, hex } from '@fuman/utils'
 import { DC_MAPPING_PROD, DC_MAPPING_TEST } from '@mtcute/convert'
 import { tl } from '@mtcute/web'
@@ -31,7 +31,9 @@ function getClient(accountId: string) {
 function getTmpClient(accountId: string): [BaseTelegramClient, () => Promise<void>] {
   const client = clients.get(accountId)
   if (!client) {
-    const tmpClient = createInternalClient(accountId)
+    const accountInfo = $accounts.get().find(it => it.id === accountId)
+    if (!accountInfo) throw new Error('Account not found')
+    const tmpClient = createInternalClient(accountId, accountInfo.testMode, accountInfo.apiOptions)
     return [tmpClient, () => tmpClient.close()]
   } else {
     return [client, () => Promise.resolve()]
@@ -73,8 +75,9 @@ export class ReplWorkerTelegram {
   async createClient(params: {
     accountId: string
     testMode?: boolean
+    apiOptions?: CustomApiFields
   }) {
-    const client = createInternalClient(params.accountId, params.testMode)
+    const client = createInternalClient(params.accountId, params.testMode, params.apiOptions)
     clients.set(params.accountId, client)
   }
 

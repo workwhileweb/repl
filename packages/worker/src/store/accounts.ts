@@ -9,6 +9,19 @@ export interface TelegramAccount {
   testMode: boolean
   telegramId: number
   dcId: number
+  apiOptions?: CustomApiFields
+}
+
+export interface CustomApiFields {
+  apiId: string
+  apiHash: string
+  deviceModel: string
+  systemVersion: string
+  appVersion: string
+  systemLangCode: string
+  langPack: string
+  langCode: string
+  extraJson: string
 }
 
 const AccountSchema = v.object({
@@ -19,6 +32,17 @@ const AccountSchema = v.object({
   name: v.string(),
   testMode: v.boolean(),
   dcId: v.number(),
+  apiOptions: v.object({
+    apiId: v.string(),
+    apiHash: v.string(),
+    deviceModel: v.string(),
+    systemVersion: v.string(),
+    appVersion: v.string(),
+    systemLangCode: v.string(),
+    langPack: v.string(),
+    langCode: v.string(),
+    extraJson: v.string(),
+  }).optional(),
 })
 
 export const $accounts = persistentAtom<TelegramAccount[]>('repl:accounts', [], {

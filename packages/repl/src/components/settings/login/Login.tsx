@@ -4,6 +4,7 @@ import { unknownToError } from '@fuman/utils'
 import { LucideChevronRight, LucideLockKeyhole, MessageSquareMore } from 'lucide-solid'
 import { workerInvoke, workerOn } from 'mtcute-repl-worker/client'
 import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from 'solid-js'
+import { toast } from 'solid-sonner'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import { OTPField, OTPFieldGroup, OTPFieldInput, OTPFieldSlot } from '../../../lib/components/ui/otp-field.tsx'
 import { Spinner } from '../../../lib/components/ui/spinner.tsx'
@@ -55,14 +56,18 @@ function QrLoginStep(props: StepProps<'qr'>) {
       cleanup2()
     })
 
-    const result = await workerInvoke('telegram', 'signInQr', {
-      accountId: props.accountId,
-      abortSignal: abortController.signal,
-    })
-    if (result === 'need_password') {
-      props.setStep('password')
-    } else {
-      props.setStep('done', { account: result })
+    try {
+      const result = await workerInvoke('telegram', 'signInQr', {
+        accountId: props.accountId,
+        abortSignal: abortController.signal,
+      })
+      if (result === 'need_password') {
+        props.setStep('password')
+      } else {
+        props.setStep('done', { account: result })
+      }
+    } catch (e) {
+      toast.error(unknownToError(e).message)
     }
   })
   onCleanup(() => abortController.abort())

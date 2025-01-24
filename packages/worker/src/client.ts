@@ -3,7 +3,7 @@ import type { ReplWorker } from './worker/main.ts'
 import type { ReplWorkerEvents } from './worker/utils.ts'
 import { Deferred, unknownToError } from '@fuman/utils'
 
-export type { TelegramAccount } from './store/accounts.ts'
+export type { CustomApiFields, TelegramAccount } from './store/accounts.ts'
 export type { StringSessionLibName } from './worker/telegram.ts'
 
 // eslint-disable-next-line ts/no-namespace

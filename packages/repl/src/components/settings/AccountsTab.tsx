@@ -1,24 +1,26 @@
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import type { TooltipTriggerProps } from '@kobalte/core/tooltip'
-import type { TelegramAccount } from 'mtcute-repl-worker/client'
+import type { CustomApiFields, TelegramAccount } from 'mtcute-repl-worker/client'
 import type { LoginStep } from './login/Login.tsx'
 import { timers, unknownToError } from '@fuman/utils'
 import {
   LucideBot,
+  LucideChevronDown,
   LucideChevronRight,
   LucideEllipsis,
+  LucideFlaskConical,
   LucideFolderUp,
   LucideLogIn,
-  LucidePlus,
   LucideRefreshCw,
   LucideSearch,
+  LucideServerCog,
   LucideTrash,
   LucideTriangleAlert,
   LucideUser,
   LucideX,
 } from 'lucide-solid'
-import { workerInvoke } from 'mtcute-repl-worker/client'
 
+import { workerInvoke } from 'mtcute-repl-worker/client'
 import { nanoid } from 'nanoid'
 import { createEffect, createMemo, createSignal, For, on, onCleanup, Show } from 'solid-js'
 import { toast } from 'solid-sonner'
@@ -36,11 +38,13 @@ import { useStore } from '../../store/use-store.ts'
 import { AccountAvatar } from '../AccountAvatar.tsx'
 import { ImportDropdown } from './import/ImportDropdown.tsx'
 import { StringSessionDefs } from './import/StringSessionImportDialog.tsx'
+import { CustomApiDialog } from './login/CustomApiDialog.tsx'
 import { LoginForm } from './login/Login.tsx'
 
 function AddAccountDialog(props: {
   show: boolean
   testMode: boolean
+  apiOptions?: CustomApiFields
   onClose: () => void
 }) {
   const [accountId, setAccountId] = createSignal<string | undefined>(undefined)
@@ -81,6 +85,7 @@ function AddAccountDialog(props: {
     await workerInvoke('telegram', 'createClient', {
       accountId: accountId()!,
       testMode: props.testMode,
+      apiOptions: props.apiOptions,
     })
   }))
 
@@ -281,17 +286,71 @@ function AccountRow(props: {
   )
 }
 
+type AddAccountMode = 'test' | 'custom-api' | 'normal'
+function LoginButton(props: {
+  size: 'xs' | 'sm'
+  onAddAccount: (mode: AddAccountMode) => void
+}) {
+  const [showDropdown, setShowDropdown] = createSignal(false)
+
+  return (
+    <div class="flex flex-row items-center">
+      <Button
+        variant="outline"
+        size={props.size}
+        onClick={() => props.onAddAccount('normal')}
+        class="rounded-r-none"
+      >
+        Log in
+      </Button>
+      <DropdownMenu
+        open={showDropdown()}
+        onOpenChange={setShowDropdown}
+      >
+        <DropdownMenuTrigger>
+          <Button
+            variant="outline"
+            size={props.size}
+            class="w-6 rounded-l-none border-l-0"
+          >
+            <LucideChevronDown class="size-3 shrink-0" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem class="py-1 text-xs" onClick={() => props.onAddAccount('test')}>
+            <LucideFlaskConical class="mr-2 size-3.5 stroke-[1.5px]" />
+            Use test server
+          </DropdownMenuItem>
+          <DropdownMenuItem class="py-1 text-xs" onClick={() => props.onAddAccount('custom-api')}>
+            <LucideServerCog class="mr-2 size-3.5 stroke-[1.5px]" />
+            Use custom API
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
+
 export function AccountsTab() {
   const accounts = useStore($accounts)
   const activeAccountId = useStore($activeAccountId)
   const [showAddAccount, setShowAddAccount] = createSignal(false)
   const [addAccountTestMode, setAddAccountTestMode] = createSignal(false)
+  const [addAccountOptions, setAddAccountOptions] = createSignal<CustomApiFields>()
 
   const [searchQuery, setSearchQuery] = createSignal('')
 
-  function handleAddAccount(e: MouseEvent) {
+  const [showCustomApi, setShowCustomApi] = createSignal(false)
+
+  function handleAddAccount(mode: AddAccountMode) {
+    if (mode === 'custom-api') {
+      setShowCustomApi(true)
+      return
+    }
+
     setShowAddAccount(true)
-    setAddAccountTestMode(e.ctrlKey || e.metaKey)
+    setAddAccountTestMode(mode === 'test')
+    setAddAccountOptions(undefined)
   }
 
   const filteredAccounts = createMemo(() => {
@@ -329,14 +388,7 @@ export function AccountsTab() {
 
             No accounts yet
             <div class="flex flex-row gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAddAccount}
-              >
-                <LucidePlus class="mr-2 size-4" />
-                Log in
-              </Button>
+              <LoginButton size="sm" onAddAccount={handleAddAccount} />
               <ImportDropdown size="sm" />
             </div>
           </div>
@@ -363,15 +415,7 @@ export function AccountsTab() {
               </TextFieldFrame>
             </TextFieldRoot>
 
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={handleAddAccount}
-            >
-              <LucidePlus class="mr-2 size-3" />
-              Log in
-            </Button>
-
+            <LoginButton size="xs" onAddAccount={handleAddAccount} />
             <ImportDropdown size="xs" />
           </div>
           <div class="flex max-w-full flex-col gap-1 overflow-hidden">
@@ -391,7 +435,18 @@ export function AccountsTab() {
       <AddAccountDialog
         show={showAddAccount()}
         testMode={addAccountTestMode()}
+        apiOptions={addAccountOptions()}
         onClose={() => setShowAddAccount(false)}
+      />
+
+      <CustomApiDialog
+        visible={showCustomApi()}
+        setVisible={setShowCustomApi}
+        onSubmit={(options) => {
+          setShowCustomApi(false)
+          setAddAccountOptions(options)
+          setShowAddAccount(true)
+        }}
       />
     </>
   )

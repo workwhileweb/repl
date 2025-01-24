@@ -131,7 +131,7 @@ export function TextField<T extends ValidComponent = 'input'>(props: Polymorphic
 
   return (
     <TextFieldPrimitive.Input
-      class={cn('border-none outline-none placeholder:text-muted-foreground bg-transparent', local.class)}
+      class={cn('border-none outline-none placeholder:text-muted-foreground bg-transparent min-w-0 w-full', local.class)}
       {...rest}
     />
   )

@@ -1,17 +1,49 @@
-import type { InputStringSessionData } from '@mtcute/web/utils.js'
-import type { TelegramAccount } from '../store/accounts.ts'
+import type { tl } from '@mtcute/web'
+import type { CustomApiFields, TelegramAccount } from '../store/accounts.ts'
 import { asNonNull } from '@fuman/utils'
 import { BaseTelegramClient, IdbStorage, TransportError } from '@mtcute/web'
 import { getMe } from '@mtcute/web/methods.js'
+import { type InputStringSessionData, jsonToTlJson } from '@mtcute/web/utils.js'
 import { nanoid } from 'nanoid'
 
-export function createInternalClient(accountId: string, testMode?: boolean) {
+export function createInternalClient(
+  accountId: string,
+  testMode?: boolean,
+  apiOptions?: CustomApiFields,
+) {
+  let initConnectionOptions: Partial<tl.RawInitConnectionRequest> | undefined
+  if (apiOptions) {
+    initConnectionOptions = {}
+    if (apiOptions.deviceModel) {
+      initConnectionOptions.deviceModel = apiOptions.deviceModel
+    }
+    if (apiOptions.systemVersion) {
+      initConnectionOptions.systemVersion = apiOptions.systemVersion
+    }
+    if (apiOptions.appVersion) {
+      initConnectionOptions.appVersion = apiOptions.appVersion
+    }
+    if (apiOptions.langCode) {
+      initConnectionOptions.langCode = apiOptions.langCode
+    }
+    if (apiOptions.langPack) {
+      initConnectionOptions.langPack = apiOptions.langPack
+    }
+    if (apiOptions.systemLangCode) {
+      initConnectionOptions.systemLangCode = apiOptions.systemLangCode
+    }
+    if (apiOptions.extraJson) {
+      initConnectionOptions.params = jsonToTlJson(JSON.parse(apiOptions.extraJson))
+    }
+  }
+
   return new BaseTelegramClient({
-    apiId: Number(import.meta.env.VITE_API_ID),
-    apiHash: import.meta.env.VITE_API_HASH,
+    apiId: Number(apiOptions?.apiId ?? import.meta.env.VITE_API_ID),
+    apiHash: apiOptions?.apiHash ?? import.meta.env.VITE_API_HASH,
     storage: new IdbStorage(`mtcute:${accountId}`),
     testMode,
     logLevel: import.meta.env.DEV ? 5 : 2,
+    initConnectionOptions,
   })
 }
 
