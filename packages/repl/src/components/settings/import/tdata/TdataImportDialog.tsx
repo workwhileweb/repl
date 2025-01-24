@@ -2,10 +2,13 @@ import type { Tdata } from '@mtcute/convert'
 import { hex } from '@fuman/utils'
 import { workerInvoke } from 'mtcute-repl-worker/client'
 import { createEffect, createSignal, on, Show } from 'solid-js'
+import { unwrap } from 'solid-js/store'
 import { Button } from '../../../../lib/components/ui/button.tsx'
+import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../../lib/components/ui/dialog.tsx'
 import { Spinner } from '../../../../lib/components/ui/spinner.tsx'
 import { $accounts } from '../../../../store/accounts.ts'
+import { CustomApiForm, useCustomApiFormState } from '../../login/CustomApiDialog.tsx'
 import { TdataDataTable } from './TdataTable.tsx'
 
 interface TdataAccount {
@@ -25,6 +28,9 @@ export function TdataImportDialog(props: {
   const [error, setError] = createSignal<string | undefined>('')
   const [loading, setLoading] = createSignal(false)
 
+  const [useCustomApi, setUseCustomApi] = createSignal(false)
+  const [customApi, setCustomApi] = useCustomApiFormState()
+
   const accountExists = (id: number) => $accounts.get()?.some(it => it.telegramId === id)
 
   let abortController: AbortController | undefined
@@ -43,6 +49,7 @@ export function TdataImportDialog(props: {
           dcId: account.dcId,
           testMode: false,
           abortSignal: abortController.signal,
+          apiOptions: unwrap(customApi),
         })
       } catch (e) {
         if (e instanceof Error) {
@@ -212,10 +219,29 @@ export function TdataImportDialog(props: {
               }}
             />
             {error() && (
-              <div class="text-error-foreground mt-2 text-sm">
+              <div class="mt-2 text-sm text-error-foreground">
                 {error()}
               </div>
             )}
+          </Show>
+
+          <Checkbox
+            class="mt-2 flex flex-row items-center gap-2"
+            checked={useCustomApi()}
+            onChange={setUseCustomApi}
+          >
+            <CheckboxControl />
+            <CheckboxLabel>
+              Use custom connection options
+            </CheckboxLabel>
+          </Checkbox>
+
+          <Show when={useCustomApi()}>
+            <CustomApiForm
+              class="mt-2"
+              state={customApi}
+              setState={setCustomApi}
+            />
           </Show>
 
           <Button

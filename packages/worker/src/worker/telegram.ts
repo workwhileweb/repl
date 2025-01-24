@@ -235,8 +235,9 @@ export class ReplWorkerTelegram {
     dcId: number
     testMode: boolean
     abortSignal: AbortSignal
+    apiOptions?: CustomApiFields
   }) {
-    const { hexAuthKey, dcId, testMode, abortSignal } = params
+    const { hexAuthKey, dcId, testMode, abortSignal, apiOptions } = params
 
     const authKey = hex.decode(hexAuthKey)
     if (authKey.length !== 256) {
@@ -247,7 +248,7 @@ export class ReplWorkerTelegram {
       authKey,
       testMode,
       primaryDcs: (testMode ? DC_MAPPING_TEST : DC_MAPPING_PROD)[dcId],
-    }, abortSignal)
+    }, abortSignal, apiOptions)
 
     if ($accounts.get().some(it => it.telegramId === account.telegramId)) {
       await deleteAccount(account.id)
@@ -267,6 +268,7 @@ export class ReplWorkerTelegram {
     libraryName: StringSessionLibName
     session: string
     abortSignal: AbortSignal
+    apiOptions?: CustomApiFields
   }) {
     let session: StringSessionData
     switch (params.libraryName) {
@@ -300,7 +302,7 @@ export class ReplWorkerTelegram {
       throw new Error(`Account already exists (user ID: ${session.self.userId})`)
     }
 
-    const account = await importAccount(session, params.abortSignal)
+    const account = await importAccount(session, params.abortSignal, params.apiOptions)
 
     // check if account already exists once again
     if ($accounts.get().some(it => it.telegramId === account.telegramId)) {

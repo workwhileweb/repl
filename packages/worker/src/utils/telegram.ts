@@ -58,9 +58,10 @@ export async function deleteAccount(accountId: string) {
 export async function importAccount(
   session: InputStringSessionData,
   abortSignal: AbortSignal,
+  apiOptions?: CustomApiFields,
 ): Promise<TelegramAccount> {
   const accountId = nanoid()
-  const client = createInternalClient(accountId, session.primaryDcs?.main.testMode)
+  const client = createInternalClient(accountId, session.primaryDcs?.main.testMode, apiOptions)
 
   let is404 = false
 

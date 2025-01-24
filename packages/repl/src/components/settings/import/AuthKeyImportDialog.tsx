@@ -1,9 +1,11 @@
 import { workerInvoke } from 'mtcute-repl-worker/client'
-import { createEffect, createSignal, on } from 'solid-js'
+import { createEffect, createSignal, on, Show } from 'solid-js'
+import { unwrap } from 'solid-js/store'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../lib/components/ui/dialog.tsx'
 import { TextField, TextFieldErrorMessage, TextFieldFrame, TextFieldLabel, TextFieldRoot } from '../../../lib/components/ui/text-field.tsx'
+import { CustomApiForm, useCustomApiFormState } from '../login/CustomApiDialog.tsx'
 
 export function AuthKeyImportDialog(props: {
   open: boolean
@@ -14,6 +16,9 @@ export function AuthKeyImportDialog(props: {
   const [testMode, setTestMode] = createSignal(false)
   const [error, setError] = createSignal<string | undefined>()
   const [loading, setLoading] = createSignal(false)
+
+  const [useCustomApi, setUseCustomApi] = createSignal(false)
+  const [customApi, setCustomApi] = useCustomApiFormState()
 
   let abortController: AbortController | undefined
   const handleSubmit = async () => {
@@ -32,6 +37,7 @@ export function AuthKeyImportDialog(props: {
         dcId: Number(dcId()),
         testMode: testMode(),
         abortSignal: abortController.signal,
+        apiOptions: useCustomApi() ? unwrap(customApi) : undefined,
       })
 
       props.onClose()
@@ -66,7 +72,7 @@ export function AuthKeyImportDialog(props: {
         </DialogHeader>
         <DialogDescription>
           <TextFieldRoot>
-            <TextFieldLabel class="text-foreground">
+            <TextFieldLabel>
               Datacenter ID
             </TextFieldLabel>
             <TextFieldFrame>
@@ -79,7 +85,7 @@ export function AuthKeyImportDialog(props: {
           </TextFieldRoot>
 
           <TextFieldRoot class="mt-2" validationState={error() ? 'invalid' : 'valid'}>
-            <TextFieldLabel class="flex flex-row items-center justify-between text-foreground">
+            <TextFieldLabel class="flex flex-row items-center justify-between">
               Hex-encoded auth key
               <a
                 href="#"
@@ -97,7 +103,7 @@ export function AuthKeyImportDialog(props: {
             </TextFieldLabel>
             <TextFieldFrame class="h-auto">
               <TextField
-                class="size-full h-40 resize-none font-mono"
+                class="size-full h-20 resize-none font-mono"
                 as="textarea"
                 ref={setAuthKeyInputRef}
                 onInput={() => setError(undefined)}
@@ -114,10 +120,29 @@ export function AuthKeyImportDialog(props: {
             onChange={setTestMode}
           >
             <CheckboxControl />
-            <CheckboxLabel class="text-foreground">
+            <CheckboxLabel>
               Use test servers
             </CheckboxLabel>
           </Checkbox>
+
+          <Checkbox
+            class="mt-2 flex flex-row items-center gap-2"
+            checked={useCustomApi()}
+            onChange={setUseCustomApi}
+          >
+            <CheckboxControl />
+            <CheckboxLabel>
+              Use custom connection options
+            </CheckboxLabel>
+          </Checkbox>
+
+          <Show when={useCustomApi()}>
+            <CustomApiForm
+              class="mt-2"
+              state={customApi}
+              setState={setCustomApi}
+            />
+          </Show>
 
           <Button
             class="mt-6 w-full"

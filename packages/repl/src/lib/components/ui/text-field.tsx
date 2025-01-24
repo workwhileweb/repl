@@ -25,7 +25,7 @@ export function TextFieldRoot<T extends ValidComponent = 'div'>(props: Polymorph
 }
 
 export const textfieldLabel = cva(
-  'text-sm font-medium data-[disabled]:cursor-not-allowed data-[disabled]:opacity-70',
+  'text-sm font-medium text-foreground data-[disabled]:cursor-not-allowed data-[disabled]:opacity-70',
   {
     variants: {
       label: {

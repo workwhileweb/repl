@@ -1,11 +1,23 @@
 import type { CheckboxControlProps } from '@kobalte/core/checkbox'
 import type { PolymorphicProps } from '@kobalte/core/polymorphic'
-import type { ValidComponent, VoidProps } from 'solid-js'
+import type { ComponentProps, ValidComponent, VoidProps } from 'solid-js'
 import { Checkbox as CheckboxPrimitive } from '@kobalte/core/checkbox'
 import { splitProps } from 'solid-js'
 import { cn } from '../../utils.ts'
 
-export const CheckboxLabel = CheckboxPrimitive.Label
+export function CheckboxLabel(props: ComponentProps<typeof CheckboxPrimitive.Label>) {
+  const [local, others] = splitProps(props, ['class'])
+  return (
+    <CheckboxPrimitive.Label
+      class={cn(
+        'text-foreground',
+        local.class,
+      )}
+      {...others}
+    />
+  )
+}
+
 export const Checkbox = CheckboxPrimitive
 export const CheckboxErrorMessage = CheckboxPrimitive.ErrorMessage
 export const CheckboxDescription = CheckboxPrimitive.Description

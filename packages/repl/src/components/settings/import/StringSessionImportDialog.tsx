@@ -1,9 +1,12 @@
 import { type StringSessionLibName, workerInvoke } from 'mtcute-repl-worker/client'
-import { createEffect, createSignal, on } from 'solid-js'
+import { createEffect, createSignal, on, Show } from 'solid-js'
+import { unwrap } from 'solid-js/store'
 import { Button } from '../../../lib/components/ui/button.tsx'
+import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../lib/components/ui/dialog.tsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../lib/components/ui/select.tsx'
 import { TextField, TextFieldErrorMessage, TextFieldFrame, TextFieldLabel, TextFieldRoot } from '../../../lib/components/ui/text-field.tsx'
+import { CustomApiForm, useCustomApiFormState } from '../login/CustomApiDialog.tsx'
 
 export const StringSessionDefs: {
   name: StringSessionLibName
@@ -26,6 +29,9 @@ export function StringSessionImportDialog(props: {
   const [error, setError] = createSignal<string | undefined>()
   const [loading, setLoading] = createSignal(false)
 
+  const [useCustomApi, setUseCustomApi] = createSignal(false)
+  const [customApi, setCustomApi] = useCustomApiFormState()
+
   let abortController: AbortController | undefined
   const handleSubmit = async () => {
     abortController?.abort()
@@ -37,6 +43,7 @@ export function StringSessionImportDialog(props: {
         libraryName: props.chosenLibName,
         session: inputRef()!.value,
         abortSignal: abortController.signal,
+        apiOptions: useCustomApi() ? unwrap(customApi) : undefined,
       })
       props.onClose()
     } catch (e) {
@@ -108,7 +115,7 @@ export function StringSessionImportDialog(props: {
             </TextFieldLabel>
             <TextFieldFrame class="h-auto">
               <TextField
-                class="size-full h-40 resize-none font-mono"
+                class="size-full h-20 resize-none font-mono"
                 as="textarea"
                 ref={setInputRef}
                 onInput={() => setError(undefined)}
@@ -118,6 +125,25 @@ export function StringSessionImportDialog(props: {
               {error()}
             </TextFieldErrorMessage>
           </TextFieldRoot>
+
+          <Checkbox
+            class="mt-4 flex flex-row items-center gap-2"
+            checked={useCustomApi()}
+            onChange={setUseCustomApi}
+          >
+            <CheckboxControl />
+            <CheckboxLabel>
+              Use custom connection options
+            </CheckboxLabel>
+          </Checkbox>
+
+          <Show when={useCustomApi()}>
+            <CustomApiForm
+              class="mt-2"
+              state={customApi}
+              setState={setCustomApi}
+            />
+          </Show>
 
           <Button
             class="mt-6 w-full"

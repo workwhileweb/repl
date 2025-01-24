@@ -6,6 +6,7 @@ import { Button } from '../../../lib/components/ui/button.tsx'
 import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogHeader } from '../../../lib/components/ui/dialog.tsx'
 import { TextField, TextFieldFrame, TextFieldLabel, TextFieldRoot } from '../../../lib/components/ui/text-field.tsx'
+import { cn } from '../../../lib/utils.ts'
 
 export function useCustomApiFormState() {
   // eslint-disable-next-line solid/reactivity
@@ -30,27 +31,29 @@ export function CustomApiForm(props: {
   const [showAdvanced, setShowAdvanced] = createSignal(false)
 
   return (
-    <div class="flex flex-col gap-2">
-      <TextFieldRoot>
-        <TextFieldLabel>API ID</TextFieldLabel>
-        <TextFieldFrame>
-          <TextField
-            placeholder="2040"
-            value={props.state.apiId}
-            onInput={e => props.setState('apiId', e.currentTarget.value.replace(/\D/g, ''))}
-          />
-        </TextFieldFrame>
-      </TextFieldRoot>
-      <TextFieldRoot>
-        <TextFieldLabel>API Hash</TextFieldLabel>
-        <TextFieldFrame>
-          <TextField
-            placeholder="b18441..."
-            value={props.state.apiHash}
-            onInput={e => props.setState('apiHash', e.currentTarget.value)}
-          />
-        </TextFieldFrame>
-      </TextFieldRoot>
+    <div class={cn('flex flex-col gap-2', props.class)}>
+      <div class="flex flex-row gap-2">
+        <TextFieldRoot class="flex-1">
+          <TextFieldLabel>API ID</TextFieldLabel>
+          <TextFieldFrame>
+            <TextField
+              placeholder="2040"
+              value={props.state.apiId}
+              onInput={e => props.setState('apiId', e.currentTarget.value.replace(/\D/g, ''))}
+            />
+          </TextFieldFrame>
+        </TextFieldRoot>
+        <TextFieldRoot class="flex-[2]">
+          <TextFieldLabel>API Hash</TextFieldLabel>
+          <TextFieldFrame>
+            <TextField
+              placeholder="b18441..."
+              value={props.state.apiHash}
+              onInput={e => props.setState('apiHash', e.currentTarget.value)}
+            />
+          </TextFieldFrame>
+        </TextFieldRoot>
+      </div>
 
       <Checkbox
         checked={showAdvanced()}
