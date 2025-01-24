@@ -1,5 +1,6 @@
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import type { mtcute } from 'mtcute-repl-worker/client'
+import type { Setter } from 'solid-js'
 import type { CustomTypeScriptWorker } from '../editor/utils/custom-worker.ts'
 import { timers } from '@fuman/utils'
 import { persistentAtom } from '@nanostores/persistent'
@@ -37,7 +38,14 @@ const $enableVerbose = persistentAtom('repl:verboseLogs', false, {
   decode: value => value === 'true',
 })
 
-export function Runner(props: { isResizing: boolean }) {
+export interface RunnerController {
+  run: () => void
+}
+
+export function Runner(props: {
+  isResizing: boolean
+  controllerRef: Setter<RunnerController | undefined>
+}) {
   const [devtoolsIframe, setDevtoolsIframe] = createSignal<HTMLIFrameElement | undefined>()
   const [runnerIframe, setRunnerIframe] = createSignal<HTMLIFrameElement>()
   const [runnerLoaded, setRunnerLoaded] = createSignal(false)
@@ -154,6 +162,10 @@ export function Runner(props: { isResizing: boolean }) {
 
   onMount(async () => {
     window.addEventListener('message', handleMessage)
+
+    props.controllerRef({
+      run: () => handleRun(),
+    })
   })
   onCleanup(() => {
     window.removeEventListener('message', handleMessage)

@@ -1,5 +1,6 @@
-import { ColorModeProvider, ColorModeScript } from '@kobalte/core'
+import type { RunnerController } from './components/runner/Runner.tsx'
 
+import { ColorModeProvider, ColorModeScript } from '@kobalte/core'
 import { workerInit } from 'mtcute-repl-worker/client'
 import { createSignal, lazy, onCleanup, onMount, Show } from 'solid-js'
 import { EditorTabs } from './components/editor/EditorTabs.tsx'
@@ -16,6 +17,7 @@ export function App() {
   const [updating, setUpdating] = createSignal(true)
   const [showSettings, setShowSettings] = createSignal(false)
   const [settingsTab, setSettingsTab] = createSignal<SettingsTab>('accounts')
+  const [runnerController, setRunnerController] = createSignal<RunnerController>()
 
   const [isResizing, setIsResizing] = createSignal(false)
   const [sizes, setSizes] = createSignal([0.5, 0.5])
@@ -76,7 +78,10 @@ export function App() {
           <Resizable sizes={sizes()} onSizesChange={e => setSizes(e)} orientation="horizontal" class="size-full max-h-[calc(100vh-57px)]">
             <ResizablePanel class="h-full overflow-x-auto overflow-y-hidden" minSize={0.2}>
               <EditorTabs />
-              <Editor class="size-full" />
+              <Editor
+                class="size-full"
+                onRun={() => runnerController()?.run()}
+              />
             </ResizablePanel>
             <ResizableHandle
               withHandle
@@ -90,7 +95,10 @@ export function App() {
               class="flex max-h-full flex-col overflow-hidden"
               minSize={0.2}
             >
-              <Runner isResizing={isResizing()} />
+              <Runner
+                isResizing={isResizing()}
+                controllerRef={setRunnerController}
+              />
             </ResizablePanel>
           </Resizable>
         </Show>

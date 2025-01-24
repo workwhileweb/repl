@@ -1,5 +1,5 @@
 import { useColorModeValue } from '@kobalte/core'
-import { editor as mEditor, Uri } from 'monaco-editor'
+import { KeyCode, KeyMod, editor as mEditor, Uri } from 'monaco-editor'
 
 import { createEffect, on, onMount } from 'solid-js'
 import { $activeTab, $tabs, type EditorTab } from '../../store/tabs.ts'
@@ -9,6 +9,7 @@ import './Editor.css'
 
 export interface EditorProps {
   class?: string
+  onRun: () => void
 }
 
 const DEFAULT_CODE = `
@@ -81,9 +82,9 @@ export default function Editor(props: EditorProps) {
 
     editor.setModel(modelsByTab.get(activeTab())!)
 
-    // editor.onDidChangeModelContent(() => {
-    //     props.onCodeChange(editor?.getValue() ?? '')
-    // })
+    editor.addCommand(KeyMod.CtrlCmd | KeyCode.Enter, () => {
+      props.onRun()
+    })
 
     return () => editor?.dispose()
   })
