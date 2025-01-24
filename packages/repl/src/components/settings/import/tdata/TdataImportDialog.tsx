@@ -25,7 +25,7 @@ export function TdataImportDialog(props: {
   const [error, setError] = createSignal<string | undefined>('')
   const [loading, setLoading] = createSignal(false)
 
-  const accountExists = (id: number) => $accounts.get().some(it => it.telegramId === id)
+  const accountExists = (id: number) => $accounts.get()?.some(it => it.telegramId === id)
 
   let abortController: AbortController | undefined
   const handleSubmit = async () => {

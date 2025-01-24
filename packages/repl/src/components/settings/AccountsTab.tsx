@@ -298,7 +298,7 @@ export function AccountsTab() {
       return accounts()
     }
 
-    return accounts().filter((account) => {
+    return accounts()?.filter((account) => {
       return account.name.toLowerCase().includes(query) || account.telegramId.toString().includes(query)
     })
   })
@@ -306,7 +306,7 @@ export function AccountsTab() {
   return (
     <>
       <Show
-        when={accounts().length !== 0}
+        when={accounts()?.length !== 0}
         fallback={(
           <div class="flex h-full flex-col items-center justify-center gap-4 text-muted-foreground">
             No accounts yet
