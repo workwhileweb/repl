@@ -141,6 +141,16 @@ window.addEventListener('message', async ({ data }) => {
     currentScriptId = nanoid()
     await swInvokeMethodInner({ event: 'UPLOAD_SCRIPT', name: currentScriptId, files: data.files }, asNonNull(navigator.serviceWorker.controller))
 
+    if (!window.tg) {
+      // shouldnt happen but just in case
+      console.warn('[mtcute-repl] Telegram client not initialized yet')
+      return
+    }
+
+    if (lastConnectionState === 'offline') {
+      await window.tg.connect()
+    }
+
     const el = document.createElement('script')
     el.type = 'module'
     let script = `import * as result from "/sw/runtime/script/${currentScriptId}/main.js";`
@@ -177,6 +187,7 @@ window.addEventListener('message', async ({ data }) => {
       initClient(lastAccountId, data.verboseLogs)
     }
     window.parent.postMessage({ event: 'CONNECTION_STATE', value: 'offline' }, HOST_ORIGIN)
+    lastConnectionState = 'offline'
   } else if (data.event === 'RECONNECT') {
     if (window.tg !== undefined) {
       window.tg.connect()
