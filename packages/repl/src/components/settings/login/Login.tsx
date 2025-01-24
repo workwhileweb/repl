@@ -81,7 +81,7 @@ function QrLoginStep(props: StepProps<'qr'>) {
           />
         ) : <Spinner indeterminate class="size-10" />}
       </div>
-      <ol class="text-muted-foreground mt-4 list-inside list-decimal text-sm">
+      <ol class="mt-4 list-inside list-decimal text-sm text-muted-foreground">
         <li>Open Telegram on your phone</li>
         <li>
           Go to
@@ -147,7 +147,7 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
       <h2 class="mt-4 text-xl font-bold">
         Log in with phone number
       </h2>
-      <div class="text-muted-foreground mt-2 text-center text-sm">
+      <div class="mt-2 text-center text-sm text-muted-foreground">
         Please confirm your country code
         <br />
         and enter your phone number
@@ -177,7 +177,7 @@ function PhoneNumberStep(props: StepProps<'phone'>) {
         <TextFieldErrorMessage>{error()}</TextFieldErrorMessage>
       </TextFieldRoot>
       <div class="flex-1" />
-      <div class="text-muted-foreground text-center text-sm">
+      <div class="text-center text-sm text-muted-foreground">
         or,
         {' '}
         <a
@@ -309,7 +309,7 @@ function OtpStep(props: StepProps<'otp'>) {
         Wrong number?
       </div>
 
-      <div class="text-muted-foreground mt-4 text-center text-sm">
+      <div class="mt-4 text-center text-sm text-muted-foreground">
         {description()}
       </div>
       <div class="mt-4 flex flex-col items-center text-center">
@@ -363,7 +363,7 @@ function OtpStep(props: StepProps<'otp'>) {
             </OTPFieldGroup>
           </OTPField>
           {error() && (
-            <div class="text-error-foreground mt-1 text-sm">{error()}</div>
+            <div class="mt-1 text-sm text-error-foreground">{error()}</div>
           )}
         </Show>
 
@@ -438,7 +438,7 @@ function PasswordStep(props: StepProps<'password'>) {
       <h2 class="text-xl font-bold">
         2FA password
       </h2>
-      <div class="text-muted-foreground mt-4 text-center text-sm">
+      <div class="mt-4 text-center text-sm text-muted-foreground">
         Your account is protected with an additional password.
       </div>
       <div class="mt-4">
@@ -483,9 +483,9 @@ function DoneStep(props: StepProps<'done'>) {
     <div class="flex flex-col items-center justify-center">
       <AccountAvatar
         account={props.ctx.account}
-        class="animate-scale-up fill-mode-forwards mb-4 size-24 shadow-sm"
+        class="mb-4 size-24 animate-scale-up shadow-sm fill-mode-forwards"
       />
-      <div class="animate-fade-out-down fill-mode-forwards text-center font-medium">
+      <div class="animate-fade-out-down text-center font-medium fill-mode-forwards">
         Welcome,
         {' '}
         {props.ctx.account.name}

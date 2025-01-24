@@ -13,6 +13,7 @@ import {
   LucideRefreshCw,
   LucideSearch,
   LucideTrash,
+  LucideTriangleAlert,
   LucideUser,
   LucideX,
 } from 'lucide-solid'
@@ -22,6 +23,7 @@ import { nanoid } from 'nanoid'
 import { createEffect, createMemo, createSignal, For, on, onCleanup, Show } from 'solid-js'
 import { toast } from 'solid-sonner'
 import { copyToClipboard } from '../../lib/clipboard.tsx'
+import { Alert, AlertDescription, AlertTitle } from '../../lib/components/ui/alert.tsx'
 import { Badge } from '../../lib/components/ui/badge.tsx'
 import { Button } from '../../lib/components/ui/button.tsx'
 import { Dialog, DialogContent } from '../../lib/components/ui/dialog.tsx'
@@ -308,7 +310,23 @@ export function AccountsTab() {
       <Show
         when={accounts()?.length !== 0}
         fallback={(
-          <div class="flex h-full flex-col items-center justify-center gap-4 text-muted-foreground">
+          <div class="flex h-full flex-col items-center justify-center gap-4 px-2 text-muted-foreground">
+            <Alert variant="destructive" class="max-w-md">
+              <LucideTriangleAlert class="size-4" />
+              <AlertTitle class="font-bold">Warning</AlertTitle>
+              <AlertDescription>
+                This is an
+                {' '}
+                <b>unofficial</b>
+                {' '}
+                Telegram application.
+                <br />
+                You might trigger anti-spam measures and get banned.
+                <br />
+                Proceed at your own risk.
+              </AlertDescription>
+            </Alert>
+
             No accounts yet
             <div class="flex flex-row gap-2">
               <Button
