@@ -23,6 +23,8 @@ export const self = await tg.getMe()
 console.log(self)
 `.trimStart()
 
+const LOCAL_STORAGE_PREFIX = 'repl:tab-content:'
+
 function findChangedTab(a: EditorTab[], b: EditorTab[]) {
   const set = new Set(a.map(tab => tab.id))
   for (const tab of b) {
@@ -40,7 +42,6 @@ export default function Editor(props: EditorProps) {
   let editor: mEditor.IStandaloneCodeEditor | undefined
 
   const monacoTheme = useColorModeValue('latte', 'mocha')
-  // const monacoTheme = () => scheme() === 'dark' ? 'ayu-dark' : 'ayu-light'
   const modelsByTab = new Map<string, mEditor.ITextModel>()
 
   onMount(async () => {
@@ -76,7 +77,8 @@ export default function Editor(props: EditorProps) {
     await setupMonaco()
 
     for (const tab of tabs()) {
-      const model = mEditor.createModel(tab.main ? DEFAULT_CODE : '', 'typescript', Uri.parse(`file:///${tab.id}.ts`))
+      const storedCode = localStorage.getItem(LOCAL_STORAGE_PREFIX + tab.id)
+      const model = mEditor.createModel(storedCode ?? (tab.main ? DEFAULT_CODE : ''), 'typescript', Uri.parse(`file:///${tab.id}.ts`))
       modelsByTab.set(tab.id, model)
     }
 
@@ -84,6 +86,14 @@ export default function Editor(props: EditorProps) {
 
     editor.addCommand(KeyMod.CtrlCmd | KeyCode.Enter, () => {
       props.onRun()
+    })
+
+    editor.onDidChangeModelContent(() => {
+      const currentTab = tabs().find(tab => tab.id === activeTab())!
+      const content = editor?.getModel()?.getValue()
+      if (!currentTab || !content) return
+
+      localStorage.setItem(LOCAL_STORAGE_PREFIX + currentTab.id, content)
     })
 
     return () => editor?.dispose()
@@ -137,6 +147,7 @@ export default function Editor(props: EditorProps) {
       if (!changed) return
       modelsByTab.get(changed.id)?.dispose()
       modelsByTab.delete(changed.id)
+      localStorage.removeItem(LOCAL_STORAGE_PREFIX + changed.id)
     }
   }))
 
