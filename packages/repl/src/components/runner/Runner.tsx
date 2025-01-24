@@ -4,7 +4,7 @@ import type { Setter } from 'solid-js'
 import type { CustomTypeScriptWorker } from '../editor/utils/custom-worker.ts'
 import { timers } from '@fuman/utils'
 import { persistentAtom } from '@nanostores/persistent'
-import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, LucideUnplug } from 'lucide-solid'
+import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSettings2, LucideSkull, LucideUnplug } from 'lucide-solid'
 import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
@@ -268,30 +268,34 @@ export function Runner(props: {
             </Button>
           )}
           <div class="flex-1" />
+          <div class="mr-2 flex items-center text-xs font-medium">
+            {{
+              offline: 'Disconnected',
+              connecting: 'Connecting...',
+              updating: 'Updating...',
+              connected: 'Ready',
+            }[connectionState()]}
+            <div class={cn(
+              'ml-2 size-2 rounded-full',
+              {
+                connected: 'bg-green-500',
+                updating: 'bg-yellow-500',
+                connecting: 'bg-yellow-500',
+                offline: 'bg-neutral-400',
+              }[connectionState()],
+            )}
+            />
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger
               as={(props: DropdownMenuTriggerProps) => (
                 <Button
                   variant="ghost"
-                  size="xs"
+                  size="icon"
+                  class="size-7"
                   {...props}
                 >
-                  {{
-                    offline: 'Disconnected',
-                    connecting: 'Connecting...',
-                    updating: 'Updating...',
-                    connected: 'Ready',
-                  }[connectionState()]}
-                  <div class={cn(
-                    'ml-2 size-2 rounded-full',
-                    {
-                      connected: 'bg-green-500',
-                      updating: 'bg-yellow-500',
-                      connecting: 'bg-yellow-500',
-                      offline: 'bg-neutral-400',
-                    }[connectionState()],
-                  )}
-                  />
+                  <LucideSettings2 class="size-4" />
                 </Button>
               )}
             />
