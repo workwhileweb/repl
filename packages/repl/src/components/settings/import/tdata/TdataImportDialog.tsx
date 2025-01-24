@@ -1,12 +1,12 @@
 import type { Tdata } from '@mtcute/convert'
 import { hex } from '@fuman/utils'
 import { workerInvoke } from 'mtcute-repl-worker/client'
-import { createEffect, createSignal, For, on, Show } from 'solid-js'
+import { createEffect, createSignal, on, Show } from 'solid-js'
 import { Button } from '../../../../lib/components/ui/button.tsx'
-import { Checkbox, CheckboxControl, CheckboxLabel } from '../../../../lib/components/ui/checkbox.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../../../../lib/components/ui/dialog.tsx'
 import { Spinner } from '../../../../lib/components/ui/spinner.tsx'
 import { $accounts } from '../../../../store/accounts.ts'
+import { TdataDataTable } from './TdataTable.tsx'
 
 interface TdataAccount {
   telegramId: number
@@ -191,41 +191,28 @@ export function TdataImportDialog(props: {
               </div>
             )}
           >
-            <For each={accounts()}>
-              {account => (
-                <Checkbox
-                  class="ml-1 flex flex-row items-center gap-2"
-                  checked={account.toImport}
-                  onChange={checked => setAccounts(
-                    accounts().map(it => it.index === account.index ? {
-                      ...it,
-                      toImport: checked,
-                    } : it),
-                  )}
-                  disabled={accountExists(account.telegramId)}
-                >
-                  <CheckboxControl />
-                  <CheckboxLabel class="flex items-center gap-1 text-sm">
-                    <div class="text-foreground">
-                      ID
-                      {' '}
-                      {account.telegramId}
-                    </div>
-                    <div class="text-xs text-muted-foreground">
-                      (DC
-                      {' '}
-                      {account.dcId}
-                      , index
-                      {' '}
-                      {account.index}
-                      )
-                    </div>
-                  </CheckboxLabel>
-                </Checkbox>
-              )}
-            </For>
+            <TdataDataTable
+              data={() => accounts().map(e => ({
+                index: e.index,
+                dcId: e.dcId,
+                telegramId: e.telegramId,
+                disabled: accountExists(e.telegramId) ?? false,
+              }))}
+              onChange={(s) => {
+                const nextAccounts = accounts().map(e => ({ ...e, toImport: false }))
+                for (const [idx, v] of Object.entries(s)) {
+                  const acc = nextAccounts.find(e => e.index === Number(idx))
+                  if (acc === undefined) continue
+                  if (accountExists(acc.telegramId)) continue
+
+                  acc.toImport = v
+                }
+
+                setAccounts(nextAccounts)
+              }}
+            />
             {error() && (
-              <div class="mt-2 text-sm text-error-foreground">
+              <div class="text-error-foreground mt-2 text-sm">
                 {error()}
               </div>
             )}

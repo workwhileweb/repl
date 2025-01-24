@@ -18,6 +18,7 @@
     "@mtcute/convert": "^0.19.8",
     "@mtcute/web": "^0.19.5",
     "@nanostores/persistent": "^0.10.2",
+    "@tanstack/solid-table": "^8.20.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "filesize": "^10.1.6",
