@@ -8,6 +8,7 @@ import { LucideCheck, LucidePlay, LucidePlug, LucideRefreshCw, LucideSkull, Luci
 import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { createEffect, createSignal, on, onCleanup, onMount } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
+import { toast } from 'solid-sonner'
 import { Button } from '../../lib/components/ui/button.tsx'
 import {
   DropdownMenu,
@@ -180,6 +181,11 @@ export function Runner(props: {
   }, { defer: true }))
 
   async function handleRun() {
+    if ($activeAccountId.get() === undefined) {
+      toast('You need to log in to run a script')
+      return
+    }
+
     const getWorker = await languages.typescript.getTypeScriptWorker()
     const worker = await getWorker(Uri.parse('file:///main.ts')) as unknown as CustomTypeScriptWorker
 
