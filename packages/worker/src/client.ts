@@ -54,6 +54,8 @@ export function workerInit(iframe_: HTMLIFrameElement) {
       def.resolve(result)
     }
   })
+
+  return loadedDeferred.promise
 }
 
 type ForceFunction<T> = T extends (...args: any) => any ? T : never

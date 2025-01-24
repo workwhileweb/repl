@@ -3,6 +3,7 @@ import type { RunnerController } from './components/runner/Runner.tsx'
 import { ColorModeProvider, ColorModeScript } from '@kobalte/core'
 import { workerInit } from 'mtcute-repl-worker/client'
 import { createSignal, lazy, onCleanup, onMount, Show } from 'solid-js'
+import { toast } from 'solid-sonner'
 import { EditorTabs } from './components/editor/EditorTabs.tsx'
 import { NavbarMenu } from './components/nav/NavbarMenu.tsx'
 import { Runner } from './components/runner/Runner.tsx'
@@ -18,6 +19,7 @@ export function App() {
   const [showSettings, setShowSettings] = createSignal(false)
   const [settingsTab, setSettingsTab] = createSignal<SettingsTab>('accounts')
   const [runnerController, setRunnerController] = createSignal<RunnerController>()
+  const [iframeLoading, setIframeLoading] = createSignal(true)
 
   const [isResizing, setIsResizing] = createSignal(false)
   const [sizes, setSizes] = createSignal([0.5, 0.5])
@@ -25,7 +27,9 @@ export function App() {
   let workerIframe!: HTMLIFrameElement
 
   onMount(() => {
-    workerInit(workerIframe)
+    workerInit(workerIframe).then(() => {
+      setIframeLoading(false)
+    })
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.metaKey && e.key === ',') {
@@ -47,6 +51,9 @@ export function App() {
           ref={workerIframe}
           class="invisible size-0"
           src={import.meta.env.VITE_IFRAME_URL}
+          on:error={() => {
+            toast('Worker iframe failed to load, try reloading the page')
+          }}
         />
         <nav class="relative flex h-auto w-full shrink-0 flex-row items-center justify-between overflow-hidden px-4 py-2">
           <h1 class="font-mono text-base">
@@ -56,6 +63,7 @@ export function App() {
 
           <div class="flex items-center gap-1">
             <NavbarMenu
+              iframeLoading={iframeLoading()}
               onShowAccounts={() => {
                 setShowSettings(true)
                 setSettingsTab('accounts')
@@ -71,6 +79,7 @@ export function App() {
           when={!updating()}
           fallback={(
             <Updater
+              iframeLoading={iframeLoading()}
               onComplete={() => setUpdating(false)}
             />
           )}

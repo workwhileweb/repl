@@ -6,6 +6,7 @@ import { $versions } from '../store/versions.ts'
 
 export interface UpdaterProps {
   onComplete: () => void
+  iframeLoading: boolean
 }
 
 export function Updater(props: UpdaterProps) {
@@ -46,7 +47,7 @@ export function Updater(props: UpdaterProps) {
         indeterminate
       />
       <div class="text-center text-xs text-muted-foreground">
-        {step()}
+        {props.iframeLoading ? 'Loading...' : step()}
         {totalBytes() !== Infinity && (
           <div>
             {filesize(downloadedBytes())}

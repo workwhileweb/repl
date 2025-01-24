@@ -26,6 +26,7 @@ import { AccountAvatar } from '../AccountAvatar.tsx'
 export function NavbarMenu(props: {
   onShowAccounts: () => void
   onShowSettings: () => void
+  iframeLoading: boolean
 }) {
   const { setColorMode } = useColorMode()
   const [localColorMode, setLocalColorMode] = createSignal(localStorage.getItem('kb-color-mode') as MaybeConfigColorMode)
@@ -40,13 +41,14 @@ export function NavbarMenu(props: {
 
   return (
     <Show
-      when={activeAccount() != null}
+      when={activeAccount() != null && !props.iframeLoading}
       fallback={(
         <Button
           variant="ghost"
           size="icon"
           class="w-auto px-2"
           onClick={props.onShowAccounts}
+          disabled={props.iframeLoading}
         >
           <LucideLogIn class="mr-2 size-4 shrink-0" />
           Log in
