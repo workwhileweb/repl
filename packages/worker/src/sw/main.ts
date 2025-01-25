@@ -1,6 +1,5 @@
 import { unknownToError } from '@fuman/utils'
 import { IS_SAFARI } from '../utils/env.ts'
-import { clearAvatarCache, handleAvatarRequest } from './avatar.ts'
 import { requestCache } from './cache.ts'
 import { type DownloadFileParams, handleDownload, handlePort } from './download/handler.ts'
 import { clearCache, handleRuntimeRequest } from './runtime.ts'
@@ -9,11 +8,6 @@ import { forgetAllScripts, forgetScript, uploadScript } from './scripts.ts'
 declare const self: ServiceWorkerGlobalScope
 
 async function handleSwRequest(_req: Request, url: URL): Promise<Response> {
-  if (url.pathname.startsWith('/sw/avatar/')) {
-    const accountId = url.pathname.split('/')[3]
-    return handleAvatarRequest(accountId)
-  }
-
   if (url.pathname.startsWith('/sw/runtime/')) {
     return handleRuntimeRequest(url)
   }
@@ -62,7 +56,6 @@ self.onoffline = self.ononline = () => {
 export type SwMessage =
   | { event: 'UPLOAD_SCRIPT', name: string, files: Record<string, string> }
   | { event: 'FORGET_SCRIPT', name: string }
-  | { event: 'CLEAR_AVATAR_CACHE', accountId: string }
   | { event: 'CLEAR_CACHE' }
   | { event: 'DOWNLOAD_FILE', id: string, params: DownloadFileParams, port: MessagePort }
 
@@ -79,10 +72,6 @@ async function handleMessage(msg: SwMessage) {
     case 'CLEAR_CACHE': {
       clearCache()
       await forgetAllScripts()
-      break
-    }
-    case 'CLEAR_AVATAR_CACHE': {
-      clearAvatarCache(msg.accountId)
       break
     }
   }

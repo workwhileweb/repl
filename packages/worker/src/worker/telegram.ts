@@ -4,13 +4,11 @@ import type { CustomApiFields, TelegramAccount } from '../store/accounts.ts'
 import { assert, hex } from '@fuman/utils'
 import { DC_MAPPING_PROD, DC_MAPPING_TEST } from '@mtcute/convert'
 import { tl } from '@mtcute/web'
-import { checkPassword, getMe, resendCode, sendCode, signIn, signInBot, signInQr } from '@mtcute/web/methods.js'
+import { checkPassword, downloadAsBuffer, getMe, resendCode, sendCode, signIn, signInBot, signInQr } from '@mtcute/web/methods.js'
 import { readStringSession } from '@mtcute/web/utils.js'
 import { nanoid } from 'nanoid'
 import { renderSVG } from 'uqr'
 import { $accounts, $activeAccountId } from '../store/accounts.ts'
-import { swInvokeMethod } from '../sw/client.ts'
-import { waitForServiceWorkerInit } from '../sw/register.ts'
 import { createInternalClient, deleteAccount, importAccount } from '../utils/telegram.ts'
 import { emitEvent } from './utils.ts'
 
@@ -39,6 +37,8 @@ function getTmpClient(accountId: string): [BaseTelegramClient, () => Promise<voi
     return [client, () => Promise.resolve()]
   }
 }
+
+let avatarCache: Cache | undefined
 
 async function handleAuthSuccess(accountId: string, user: User) {
   const client = getClient(accountId)
@@ -221,13 +221,34 @@ export class ReplWorkerTelegram {
   }
 
   async fetchAvatar(accountId: string) {
-    await waitForServiceWorkerInit()
-    const res = await fetch(`/sw/avatar/${accountId}/avatar.jpg`)
-    if (!res.ok) {
-      return null
-    } else {
-      return new Uint8Array(await res.arrayBuffer())
+    if (!avatarCache) {
+      avatarCache = await caches.open('mtcute-repl-avatars')
     }
+    const req = new Request(`/${accountId}.jpg`)
+    const cached = await avatarCache.match(req)
+
+    if (cached) {
+      if (!cached.ok) return null
+      return new Uint8Array(await cached.arrayBuffer())
+    }
+
+    const [client, cleanup] = getTmpClient(accountId)
+    const self = await getMe(client)
+
+    let response: Response
+    let result: Uint8Array | null = null
+    if (!self.photo) {
+      response = new Response('No photo', { status: 404 })
+      result = null
+    } else {
+      const buf = await downloadAsBuffer(client, self.photo.big)
+      response = new Response(buf)
+      result = buf
+    }
+
+    await cleanup()
+    await avatarCache.put(req, response)
+    return result
   }
 
   async importAuthKey(params: {
@@ -400,11 +421,15 @@ export class ReplWorkerTelegram {
   }) {
     const { accountId } = params
 
+    if (!avatarCache) {
+      avatarCache = await caches.open('mtcute-repl-avatars')
+    }
+
+    await avatarCache.delete(new Request(`/${accountId}.jpg`))
+
     const [client, cleanup] = getTmpClient(accountId)
     const self = await getMe(client)
     await cleanup()
-
-    await swInvokeMethod({ event: 'CLEAR_AVATAR_CACHE', accountId })
 
     $accounts.set($accounts.get().map((it) => {
       if (it.id === accountId) {
