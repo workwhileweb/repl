@@ -88,6 +88,12 @@ importers:
       '@nanostores/persistent':
         specifier: ^0.10.2
         version: 0.10.2(nanostores@0.11.3)
+      '@tanstack/solid-query':
+        specifier: ^5.64.2
+        version: 5.64.2(solid-js@1.9.4)
+      '@tanstack/solid-query-persist-client':
+        specifier: ^5.64.2
+        version: 5.64.2(@tanstack/solid-query@5.64.2(solid-js@1.9.4))(solid-js@1.9.4)
       '@tanstack/solid-table':
         specifier: ^8.20.5
         version: 8.20.5(solid-js@1.9.4)
@@ -1170,6 +1176,23 @@ packages:
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
+
+  '@tanstack/query-core@5.64.2':
+    resolution: {integrity: sha512-hdO8SZpWXoADNTWXV9We8CwTkXU88OVWRBcsiFrk7xJQnhm6WRlweDzMD+uH+GnuieTBVSML6xFa17C2cNV8+g==}
+
+  '@tanstack/query-persist-client-core@5.64.2':
+    resolution: {integrity: sha512-yhBClzqwReV7pA1J6FsyWCND++ceqv0nqv8NOrC9rTsou9XfAJ0PlSl7XFupu9ZwsBF6Ooalc9KSHa25WxJ0/Q==}
+
+  '@tanstack/solid-query-persist-client@5.64.2':
+    resolution: {integrity: sha512-EyX5+MJqgU4ZCiDG0l531zcs7kYi7JyDRJ1U82GS4e872WldEMmJh9PHCG6mLmrZy9DhYiQkTaiIv5XXUm1Mnw==}
+    peerDependencies:
+      '@tanstack/solid-query': ^5.64.2
+      solid-js: ^1.6.0
+
+  '@tanstack/solid-query@5.64.2':
+    resolution: {integrity: sha512-SxYRxU4hU4fBNBrFujxpohVdAcjeivCY0hZh+YkdBsyZ7NphJq6VulS4TKGt8LsGyOtMSullvsCvIlOza0n/iQ==}
+    peerDependencies:
+      solid-js: ^1.6.0
 
   '@tanstack/solid-table@8.20.5':
     resolution: {integrity: sha512-LsB/g/24CjBpccOcok+u+tfyqtU9SIQg5wf7ne54jRdEsy5YQnrpb5ATWZileHBduIG0p/1oE7UOA+DyjtnbDQ==}
@@ -3733,6 +3756,23 @@ snapshots:
   '@swc/helpers@0.5.15':
     dependencies:
       tslib: 2.8.1
+
+  '@tanstack/query-core@5.64.2': {}
+
+  '@tanstack/query-persist-client-core@5.64.2':
+    dependencies:
+      '@tanstack/query-core': 5.64.2
+
+  '@tanstack/solid-query-persist-client@5.64.2(@tanstack/solid-query@5.64.2(solid-js@1.9.4))(solid-js@1.9.4)':
+    dependencies:
+      '@tanstack/query-persist-client-core': 5.64.2
+      '@tanstack/solid-query': 5.64.2(solid-js@1.9.4)
+      solid-js: 1.9.4
+
+  '@tanstack/solid-query@5.64.2(solid-js@1.9.4)':
+    dependencies:
+      '@tanstack/query-core': 5.64.2
+      solid-js: 1.9.4
 
   '@tanstack/solid-table@8.20.5(solid-js@1.9.4)':
     dependencies:

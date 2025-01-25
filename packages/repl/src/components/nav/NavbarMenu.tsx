@@ -1,7 +1,7 @@
 import type { ConfigColorMode, MaybeConfigColorMode } from '@kobalte/core'
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import { useColorMode } from '@kobalte/core'
-import { LucideCheck, LucideChevronRight, LucideExternalLink, LucideLaptop, LucideLogIn, LucideMoon, LucideSun, LucideUsers } from 'lucide-solid'
+import { LucideCheck, LucideChevronRight, LucideExternalLink, LucideLaptop, LucideLogIn, LucideMoon, LucideNotebook, LucideSun, LucideUsers } from 'lucide-solid'
 import { SiGithub } from 'solid-icons/si'
 import { createSignal, For, Show } from 'solid-js'
 import { Button } from '../../lib/components/ui/button.tsx'
@@ -26,6 +26,7 @@ import { AccountAvatar } from '../AccountAvatar.tsx'
 export function NavbarMenu(props: {
   onShowAccounts: () => void
   onShowSettings: () => void
+  onShowChangelog: () => void
   iframeLoading: boolean
 }) {
   const { setColorMode } = useColorMode()
@@ -144,6 +145,10 @@ export function NavbarMenu(props: {
               <LucideUsers class="mr-2 size-4" />
               Manage accounts
               <DropdownMenuShortcut>⌘ ,</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={props.onShowChangelog}>
+              <LucideNotebook class="mr-2 size-4" />
+              Changelog
             </DropdownMenuItem>
             <DropdownMenuItem
               as="a"

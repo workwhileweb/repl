@@ -10,6 +10,9 @@ export default defineConfig((env): UserConfig => {
   }
 
   return {
+    define: {
+      'import.meta.env.BUILD_VERSION': JSON.stringify(new Date()),
+    },
     optimizeDeps: {
       exclude: ['@mtcute/wasm'],
     },
