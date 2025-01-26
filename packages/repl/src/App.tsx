@@ -1,10 +1,8 @@
 import type { RunnerController } from './components/runner/Runner.tsx'
 
 import { ColorModeProvider, ColorModeScript } from '@kobalte/core'
-import {
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/solid-query'
+import { QueryClient } from '@tanstack/solid-query'
+import { PersistQueryClientProvider } from '@tanstack/solid-query-persist-client'
 import { LucidePartyPopper } from 'lucide-solid'
 import { workerInit } from 'mtcute-repl-worker/client'
 import { createSignal, lazy, onCleanup, onMount, Show } from 'solid-js'
@@ -17,6 +15,7 @@ import { SettingsDialog, type SettingsTab } from './components/settings/Settings
 import { Updater } from './components/Updater.tsx'
 import { Resizable, ResizableHandle, ResizablePanel } from './lib/components/ui/resizable.tsx'
 import { Toaster } from './lib/components/ui/sonner.tsx'
+import { createIdbPersister } from './store/query-persist.ts'
 
 const Editor = lazy(() => import('./components/editor/Editor.tsx'))
 
@@ -41,6 +40,7 @@ export function App() {
 
     if (localBuild === null || new Date(localBuild) !== new Date(latestBuild)) {
       localStorage.setItem('repl:buildVersion', latestBuild)
+      queryClient.clear()
       setTimeout(() => {
         toast.custom(t => (
           <div
@@ -81,7 +81,12 @@ export function App() {
     <div class="flex h-screen w-screen flex-col overflow-hidden">
       <Toaster />
       <ColorModeScript />
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister: createIdbPersister(),
+        }}
+      >
         <ColorModeProvider>
           <iframe
             ref={workerIframe}
@@ -113,7 +118,7 @@ export function App() {
               />
             </div>
           </nav>
-          <div class="bg-border h-px shrink-0" />
+          <div class="h-px shrink-0 bg-border" />
           <Show
             when={!updating()}
             fallback={(
@@ -163,7 +168,7 @@ export function App() {
             onTabChange={setSettingsTab}
           />
         </ColorModeProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </div>
   )
 }

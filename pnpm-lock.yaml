@@ -106,6 +106,9 @@ importers:
       filesize:
         specifier: ^10.1.6
         version: 10.1.6
+      idb-keyval:
+        specifier: ^6.2.1
+        version: 6.2.1
       lucide-solid:
         specifier: ^0.445.0
         version: 0.445.0(solid-js@1.9.4)
@@ -1950,6 +1953,9 @@ packages:
   html-tags@3.3.1:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
     engines: {node: '>=8'}
+
+  idb-keyval@6.2.1:
+    resolution: {integrity: sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==}
 
   idb@8.0.1:
     resolution: {integrity: sha512-EkBCzUZSdhJV8PxMSbeEV//xguVKZu9hZZulM+2gHXI0t2hGVU3eYE6/XnH77DS6FM2FY8wl17aDcu9vXpvLWQ==}
@@ -4689,6 +4695,8 @@ snapshots:
   html-entities@2.3.3: {}
 
   html-tags@3.3.1: {}
+
+  idb-keyval@6.2.1: {}
 
   idb@8.0.1: {}
 
