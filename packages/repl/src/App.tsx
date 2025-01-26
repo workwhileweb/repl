@@ -38,13 +38,13 @@ export function App() {
     const localBuild = localStorage.getItem('repl:buildVersion')
     const latestBuild: string = import.meta.env.BUILD_VERSION
 
-    if (localBuild === null || new Date(localBuild) !== new Date(latestBuild)) {
+    if (localBuild === null || localBuild !== latestBuild) {
       localStorage.setItem('repl:buildVersion', latestBuild)
       queryClient.clear()
       setTimeout(() => {
         toast.custom(t => (
           <div
-            class="flex cursor-pointer items-center rounded-md border p-6"
+            class="flex cursor-pointer items-center overflow-hidden rounded-md border p-6"
             onClick={() => {
               setShowChangelog(true)
               toast.dismiss(t)
