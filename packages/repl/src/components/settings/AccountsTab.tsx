@@ -348,8 +348,8 @@ export function AccountsTab() {
       return
     }
 
-    setShowAddAccount(true)
     setAddAccountTestMode(mode === 'test')
+    setShowAddAccount(true)
     setAddAccountOptions(undefined)
   }
 
