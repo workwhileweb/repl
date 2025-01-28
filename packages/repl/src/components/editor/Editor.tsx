@@ -14,7 +14,7 @@ export interface EditorProps {
 
 const DEFAULT_CODE = `
 /**
- * This playground comes pre-loaded with all @mtcute/* libraries,
+ * This playground comes pre-installed with all @mtcute/* libraries,
  * as well as a pre-configured Telegram client (available as \`tg\` global variable).
  *
  * Exports from this file will become available in the REPL.
