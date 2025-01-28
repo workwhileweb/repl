@@ -1,11 +1,9 @@
+import type { BaseTelegramClientOptions, ConnectionState } from '@mtcute/web'
 import { asNonNull } from '@fuman/utils'
-import { FileLocation, Long, TelegramClient } from '@mtcute/web'
+import { FileLocation, Long, networkMiddlewares, TelegramClient } from '@mtcute/web'
 import { nanoid } from 'nanoid'
 import { swInvokeMethodInner } from '../client-inner.ts'
 import { createFileDownload } from '../download/client.ts'
-
-type ConnectionState = import('@mtcute/web').ConnectionState
-type TelegramClientOptions = import('@mtcute/web').TelegramClientOptions
 
 const HOST_ORIGIN = import.meta.env.VITE_HOST_ORIGIN
 
@@ -15,6 +13,7 @@ declare const window: typeof globalThis & {
   __currentScript: any
   __handleScriptEnd: (error: any) => void
   tg: import('@mtcute/web').TelegramClient
+  setMiddlewareOptions: (options: networkMiddlewares.BasicMiddlewaresOptions) => Promise<void>
 }
 
 Object.defineProperty(globalThis, 'Long', { value: Long })
@@ -35,14 +34,29 @@ chobitsu.setOnMessage((message: string) => {
 
 let lastAccountId: string | undefined
 let lastConnectionState: ConnectionState | undefined
+let lastMiddlewareOptions: networkMiddlewares.BasicMiddlewaresOptions | undefined
 let currentScriptId: string | undefined
 let logUpdates = false
 let verboseLogs = false
 
+Object.defineProperty(globalThis, 'setMiddlewareOptions', {
+  value: async (options: networkMiddlewares.BasicMiddlewaresOptions) => {
+    if (JSON.stringify(options) === JSON.stringify(lastMiddlewareOptions)) return
+    lastMiddlewareOptions = options
+    if (window.tg) {
+      await window.tg.close()
+      initClient(lastAccountId!, verboseLogs)
+      if (lastConnectionState !== 'offline') {
+        await window.tg.connect()
+      }
+    }
+  },
+})
+
 function initClient(accountId: string, verbose: boolean) {
   lastAccountId = accountId
 
-  let extraConfig: Partial<TelegramClientOptions> | undefined
+  const extraConfig: Partial<BaseTelegramClientOptions> = {}
 
   const storedAccounts = localStorage.getItem('repl:accounts')
   if (storedAccounts) {
@@ -51,9 +65,13 @@ function initClient(accountId: string, verbose: boolean) {
     if (!ourAccount) return
 
     if (ourAccount && ourAccount.testMode) {
-      extraConfig = {
-        testMode: true,
-      }
+      extraConfig.testMode = true
+    }
+  }
+
+  if (lastMiddlewareOptions) {
+    extraConfig.network = {
+      middlewares: networkMiddlewares.basic(lastMiddlewareOptions),
     }
   }
 
