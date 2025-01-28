@@ -85,6 +85,7 @@ export function Runner(props: {
     setRunnerLoaded(false)
     setConnectionState('offline')
     setDead(false)
+    setRunning(false)
     timers.clearTimeout(deadTimer)
 
     const iframe = document.createElement('iframe')
