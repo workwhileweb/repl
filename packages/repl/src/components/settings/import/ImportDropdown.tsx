@@ -1,7 +1,8 @@
 import type { DropdownMenuTriggerProps } from '@kobalte/core/dropdown-menu'
 import type { StringSessionLibName } from 'mtcute-repl-worker/client'
-import { LucideBot, LucideChevronRight, LucideDownload, LucideKeyRound, LucideLaptop, LucideTextCursorInput } from 'lucide-solid'
-import { createSignal, For } from 'solid-js'
+import { LucideBot, LucideChevronRight, LucideDownload, LucideKeyRound, LucideLaptop, LucideStore, LucideTextCursorInput } from 'lucide-solid'
+import { createSignal, For, Show } from 'solid-js'
+import { toast } from 'solid-sonner'
 import { Button } from '../../../lib/components/ui/button.tsx'
 import {
   DropdownMenu,
@@ -16,6 +17,11 @@ import { AuthKeyImportDialog } from './AuthKeyImportDialog.tsx'
 import { BotTokenImportDialog } from './BotTokenImportDialog.tsx'
 import { StringSessionDefs, StringSessionImportDialog } from './StringSessionImportDialog.tsx'
 import { TdataImportDialog } from './tdata/TdataImportDialog.tsx'
+
+function isFirstApril() {
+  const date = new Date()
+  return date.getMonth() === 3 && date.getDate() === 1 // April, 1st
+}
 
 export function ImportDropdown(props: { size: 'xs' | 'sm' }) {
   const [showImportStringSession, setShowImportStringSession] = createSignal(false)
@@ -74,6 +80,16 @@ export function ImportDropdown(props: { size: 'xs' | 'sm' }) {
               </For>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+          <Show when={isFirstApril()}>
+            <DropdownMenuItem
+              class="py-1 text-xs"
+              onClick={() => toast.error("This feature isn't available on 1 April, sorry.")}
+              {...props}
+            >
+              <LucideStore class="mr-2 size-3.5 stroke-[1.5px]" />
+              Lolzteam Market
+            </DropdownMenuItem>
+          </Show>
           <DropdownMenuItem
             class="py-1 text-xs"
             onClick={() => setShowImportTdata(true)}
