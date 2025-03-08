@@ -33,7 +33,14 @@ export async function getPackagesToDownload(latestVersions: Record<string, strin
   const queued: [string, string][] = []
 
   for (const pkg of Object.keys(latestVersions)) {
-    if (await storage.getExistingLibVersion(pkg) === latestVersions[pkg]) continue
+    if (await storage.getExistingLibVersion(pkg) === latestVersions[pkg]) {
+      if (pkg === '@mtcute/tl' && !localStorage.getItem('mtcute:tl-hotfix-200')) {
+        // hotfix lol (todo remove once layer 201 is out)
+        localStorage.setItem('mtcute:tl-hotfix-200', '1')
+      } else {
+        continue
+      }
+    }
     queue.enqueue([pkg, latestVersions[pkg]])
     queued.push([pkg, latestVersions[pkg]])
   }
@@ -112,6 +119,14 @@ function patchMtcuteTl(file: VfsFile) {
       ].join('')
       break
     }
+    case 'compat/reader.js': {
+      text = [
+        'const exports = {};',
+        text,
+        'export const __tlReaderMapCompat = exports.__tlReaderMapCompat;',
+      ].join('')
+      break
+    }
     case 'binary/writer.js': {
       text = [
         'const exports = {};',
@@ -133,6 +148,7 @@ function patchMtcuteTl(file: VfsFile) {
       json.exports = {
         '.': './index.js',
         './binary/reader.js': './binary/reader.js',
+        './compat/reader.js': './compat/reader.js',
         './binary/writer.js': './binary/writer.js',
         './binary/rsa-keys.js': './binary/rsa-keys.js',
       }
