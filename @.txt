@@ -1,0 +1,17 @@
+VITE_API_ID=6
+VITE_API_HASH=eb06d4abfb49dc3eeb1aeb98ae0f581e
+VITE_IFRAME_URL=http://localhost:3001
+VITE_HOST_ORIGIN=http://localhost:3000
+
+
+.\build-patched-chobitsu.bat
+Failed to apply chobitsu.patch
+
+
+https://play.mtcute.dev/
+
+
+🔗github.com : liriliri/chobitsu: Chrome devtools protocol JavaScript implementation - https://github.com/liriliri/chobitsu
+
+https://github.com/mtcute/repl
+
